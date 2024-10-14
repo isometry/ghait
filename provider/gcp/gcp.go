@@ -9,18 +9,25 @@ import (
 	kms "cloud.google.com/go/kms/apiv1"
 	"cloud.google.com/go/kms/apiv1/kmspb"
 	"github.com/golang-jwt/jwt/v4"
+	"google.golang.org/api/option"
 
 	"github.com/isometry/ghait/provider"
 )
 
+func init() {
+	provider.Register("gcp", NewSigner)
+}
+
+// gcpSigner implements provider.Provider & ghinstallation.Signer for GCP KMS.
 type gcpSigner struct {
 	context context.Context
 	client  *kms.KeyManagementClient
 	key     string
 }
 
-func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
-	client, err := kms.NewKeyManagementClient(ctx)
+// NewGcpSigner creates a new GCP signer.
+func NewGcpSigner(ctx context.Context, key string, opts ...option.ClientOption) (provider.Provider, error) {
+	client, err := kms.NewKeyManagementClient(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +37,11 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 		client:  client,
 		key:     key,
 	}, nil
+}
+
+// NewSigner returns a new GCP signer with default configuration.
+func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
+	return NewGcpSigner(ctx, key)
 }
 
 func (s *gcpSigner) Check() error {
@@ -46,6 +58,7 @@ func (s *gcpSigner) Sign(claims jwt.Claims) (string, error) {
 	return jwt.NewWithClaims(method, claims).SignedString(s.key)
 }
 
+// gcpSigningMethod implements jwt.SigningMethod for GCP KMS.
 type gcpSigningMethod struct {
 	context context.Context
 	client  *kms.KeyManagementClient

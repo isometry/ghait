@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"sync"
 
 	"errors"
 
@@ -22,13 +23,22 @@ type Provider interface {
 
 type providerRegistry map[string]func(ctx context.Context, key string) (Provider, error)
 
-var registry = providerRegistry{}
+var (
+	registry = providerRegistry{}
+	mu       sync.RWMutex
+)
 
 func Register(name string, newSigner func(ctx context.Context, key string) (Provider, error)) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	registry[name] = newSigner
 }
 
 func Registered() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+
 	keys := make([]string, 0, len(registry))
 	for k := range registry {
 		keys = append(keys, k)
@@ -37,6 +47,9 @@ func Registered() []string {
 }
 
 func NewSigner(ctx context.Context, provider, key string) (Provider, error) {
+	mu.RLock()
+	defer mu.RUnlock()
+
 	newSigner, ok := registry[provider]
 	if !ok {
 		return nil, ErrUnsupportedProvider

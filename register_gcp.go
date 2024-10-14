@@ -3,10 +3,5 @@
 package ghait
 
 import (
-	"github.com/isometry/ghait/provider"
-	"github.com/isometry/ghait/provider/gcp"
+	_ "github.com/isometry/ghait/provider/gcp"
 )
-
-func init() {
-	provider.Register("gcp", gcp.NewSigner)
-}

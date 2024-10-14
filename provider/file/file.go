@@ -18,11 +18,13 @@ func init() {
 	provider.Register("file", NewSigner)
 }
 
-type rsaSigner struct {
+// fileSigner implements provider.Provider & ghinstallation.Signer with a local RSA key file.
+type fileSigner struct {
 	context context.Context
 	key     *rsa.PrivateKey
 }
 
+// NewSigner creates a new file signer.
 func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 	var keyBytes []byte
 
@@ -49,18 +51,18 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 		return nil, fmt.Errorf("failed to parse RSA private key: %w", err)
 	}
 
-	return &rsaSigner{
+	return &fileSigner{
 		context: ctx,
 		key:     privateKey,
 	}, nil
 }
 
-func (s *rsaSigner) Check() error {
+func (s *fileSigner) Check() error {
 	// validated within NewSigner
 	return nil
 }
 
 // Sign signs the JWT claims with the RSA key.
-func (s *rsaSigner) Sign(claims jwt.Claims) (string, error) {
+func (s *fileSigner) Sign(claims jwt.Claims) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(s.key)
 }

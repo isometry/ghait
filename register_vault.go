@@ -3,10 +3,5 @@
 package ghait
 
 import (
-	"github.com/isometry/ghait/provider"
-	"github.com/isometry/ghait/provider/vault"
+	_ "github.com/isometry/ghait/provider/vault"
 )
-
-func init() {
-	provider.Register("vault", vault.NewSigner)
-}

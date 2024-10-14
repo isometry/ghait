@@ -21,39 +21,38 @@ var (
 )
 
 func main() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-	}
+	_ = rootCmd.Execute()
 }
 
 var rootCmd = &cobra.Command{
-	Use:     "ghait [flags]",
-	Short:   "Generate an ephemeral GitHub App installation token",
-	RunE:    runToken,
-	Version: fmt.Sprintf("%s, commit %s, built at %s", version, commit, date),
+	Use:          "ghait [flags]",
+	Short:        "Generate an ephemeral GitHub App installation token",
+	SilenceUsage: true,
+	RunE:         runToken,
+	Version:      fmt.Sprintf("%s, commit %s, built at %s", version, commit, date),
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.Flags().Int64P("app-id", "a", 0, "App ID (required)")
-	viper.BindPFlag("app-id", rootCmd.Flags().Lookup("app-id"))
+	rootCmd.PersistentFlags().Int64P("app-id", "a", 0, "App ID (required)")
+	viper.BindPFlag("app-id", rootCmd.PersistentFlags().Lookup("app-id"))
 
-	rootCmd.Flags().Int64P("installation-id", "i", 0, "Installation ID (required)")
-	viper.BindPFlag("installation-id", rootCmd.Flags().Lookup("installation-id"))
+	rootCmd.PersistentFlags().Int64P("installation-id", "i", 0, "Installation ID (required)")
+	viper.BindPFlag("installation-id", rootCmd.PersistentFlags().Lookup("installation-id"))
 
-	rootCmd.Flags().StringP("key", "k", "", "Private key or identifier (required)")
-	viper.BindPFlag("key", rootCmd.Flags().Lookup("key"))
+	rootCmd.PersistentFlags().StringP("key", "k", "", "Private key or identifier (required)")
+	viper.BindPFlag("key", rootCmd.PersistentFlags().Lookup("key"))
 
-	rootCmd.Flags().StringP("provider", "P", "file", fmt.Sprintf("KMS provider (supported: [%s])", strings.Join(provider.Registered(), ",")))
-	viper.BindPFlag("provider", rootCmd.Flags().Lookup("provider"))
+	rootCmd.PersistentFlags().StringP("provider", "P", "file", fmt.Sprintf("KMS provider (supported: [%s])", strings.Join(provider.Registered(), ",")))
+	viper.BindPFlag("provider", rootCmd.PersistentFlags().Lookup("provider"))
 
-	rootCmd.Flags().StringSliceP("repository", "r", nil, "Repository names to grant access to (default all)")
-	viper.BindPFlag("repository", rootCmd.Flags().Lookup("repository"))
+	rootCmd.PersistentFlags().StringSliceP("repository", "r", nil, "Repository names to grant access to (default all)")
+	viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository"))
 
-	rootCmd.Flags().StringToStringP("permission", "p", nil, "Restricted permissions to grant")
-	rootCmd.Flags().Lookup("permission").DefValue = "all"
-	viper.BindPFlag("permission", rootCmd.Flags().Lookup("permission"))
+	rootCmd.PersistentFlags().StringToStringP("permission", "p", nil, "Restricted permissions to grant")
+	rootCmd.PersistentFlags().Lookup("permission").DefValue = "all"
+	viper.BindPFlag("permission", rootCmd.PersistentFlags().Lookup("permission"))
 
 	rootCmd.Flags().SortFlags = false
 }
@@ -65,22 +64,22 @@ func initConfig() {
 }
 
 func runToken(cmd *cobra.Command, args []string) error {
-	config := ghait.Config{
-		AppID:          viper.GetInt64("app-id"),
-		InstallationID: viper.GetInt64("installation-id"),
-		Provider:       strings.ToLower(viper.GetString("provider")),
-		Key:            viper.GetString("key"),
-	}
+	config := ghait.NewConfig(
+		viper.GetInt64("app-id"),
+		viper.GetInt64("installation-id"),
+		strings.ToLower(viper.GetString("provider")),
+		viper.GetString("key"),
+	)
 
-	if config.AppID == 0 {
+	if config.GetAppID() == 0 {
 		return errors.New("app-id is required")
 	}
 
-	if config.InstallationID == 0 {
+	if config.GetInstallationID() == 0 {
 		return errors.New("installation-id is required")
 	}
 
-	ghapp, err := ghait.NewGHAIT(cmd.Context(), &config)
+	factory, err := ghait.NewGHAIT(cmd.Context(), config)
 	if err != nil {
 		return err
 	}
@@ -90,17 +89,18 @@ func runToken(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("decode permissions: %w", err)
 	}
 
-	options := &github.InstallationTokenOptions{
+	tokenOptions := &github.InstallationTokenOptions{
 		Repositories: viper.GetStringSlice("repository"),
 		Permissions:  permissions,
 	}
 
-	instToken, err := ghapp.NewInstallationToken(cmd.Context(), 0, options)
+	token, err := factory.NewTokenWithOptions(cmd.Context(), tokenOptions)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(instToken.GetToken())
+	fmt.Println(token.GetToken())
+	fmt.Fprintf(cmd.ErrOrStderr(), "Expires at: %s\n", token.GetExpiresAt())
 
 	return nil
 }

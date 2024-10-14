@@ -60,30 +60,34 @@ ghait --provider vault --key transit/sign/github --repo ghait --permission conte
 
 ## Providers
 
+Various KMS providers are implemented, each conforming to the `Signer` interface of [`bradleyfalzon/ghinstallation/v2`](https://github.com/bradleyfalzon/ghinstallation).
+
 ### File
 
 The `file` provider expects `key` to be the path to a file holding your GitHub App private key, or alternatively the full contents of the key itself.
+
+Disable inclusion with the `no_file` build tag.
 
 ### AWS
 
 The `aws` provider offloads JWT token signing to AWS KMS. `key` takes the form of a KMS key reference.
 Usage relies on standard AWS configuration and credentials being available to the app.
 
-Disable inclusion by building with the `no_aws` tag.
+Disable inclusion with the `no_aws` build tag.
 
 ### GCP
 
 The `gcp` provider offloads JWT token signing to GCP KMS. `key` takes the form of a KMS key reference.
 Usage relies on standard GCP configuration and credentials being available to the app.
 
-Disable inclusion by building with the `no_gcp` tag.
+Disable inclusion with the `no_gcp` build tag.
 
 ### Vault
 
 The `vault` provider offloads JWT token signing to GCP KMS. `key` takes the form of a transit secrets engine signing path `<mountpoint>/sign/<name>`, for example `transit/sign/github`.
 Usage relies on standard Vault configuration and credentials being available to the app.
 
-Disable inclusion by building with the `no_vault` tag.
+Disable inclusion with the `no_vault` build tag.
 
 ## Environment Variables
 

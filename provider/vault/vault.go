@@ -13,16 +13,26 @@ import (
 	"github.com/isometry/ghait/provider"
 )
 
+func init() {
+	provider.Register("vault", NewSigner)
+}
+
+// vaultSigner implements provider.Provider & ghinstallation.Signer for Vault.
 type vaultSigner struct {
 	context context.Context
 	client  *vault.Client
 	key     string
 }
 
-func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
+// NewVaultSigner creates a new Vault signer.
+func NewVaultSigner(ctx context.Context, key string, optFns ...func(*vault.Config)) (provider.Provider, error) {
 	config := vault.DefaultConfig()
 	if err := config.ReadEnvironment(); err != nil {
 		return nil, err
+	}
+
+	for _, optFn := range optFns {
+		optFn(config)
 	}
 
 	client, err := vault.NewClient(config)
@@ -35,6 +45,11 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 		client:  client,
 		key:     key,
 	}, nil
+}
+
+// NewSigner returns a new Vault signer with default configuration.
+func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
+	return NewVaultSigner(ctx, key)
 }
 
 func (s *vaultSigner) Check() error {
@@ -51,6 +66,7 @@ func (s *vaultSigner) Sign(claims jwt.Claims) (string, error) {
 	return jwt.NewWithClaims(method, claims).SignedString(s.key)
 }
 
+// vaultSigningMethod implements jwt.SigningMethod for Vault.
 type vaultSigningMethod struct {
 	context context.Context
 	client  *vault.Client

@@ -15,14 +15,20 @@ import (
 	"github.com/isometry/ghait/provider"
 )
 
+func init() {
+	provider.Register("aws", NewSigner)
+}
+
+// awsSigner implements provider.Provider & ghinstallation.Signer for AWS KMS.
 type awsSigner struct {
 	context context.Context
 	client  *kms.Client
 	key     string
 }
 
-func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
-	config, err := config.LoadDefaultConfig(ctx)
+// NewAwsSigner creates a new AWS signer.
+func NewAwsSigner(ctx context.Context, key string, optFns ...func(*config.LoadOptions) error) (provider.Provider, error) {
+	config, err := config.LoadDefaultConfig(ctx, optFns...)
 	if err != nil {
 		return nil, err
 	}
@@ -34,6 +40,11 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 		client:  client,
 		key:     key,
 	}, nil
+}
+
+// NewSigner returns a new AWS signer with default configuration.
+func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
+	return NewAwsSigner(ctx, key)
 }
 
 func (s *awsSigner) Check() error {
@@ -69,6 +80,7 @@ func (s *awsSigner) Sign(claims jwt.Claims) (string, error) {
 	return jwt.NewWithClaims(method, claims).SignedString(s.key)
 }
 
+// awsSigningMethod implements jwt.SigningMethod for AWS KMS.
 type awsSigningMethod struct {
 	context context.Context
 	client  *kms.Client
