@@ -51,11 +51,11 @@ To generate a GitHub App installation token using the CLI, run:
 
 ```sh
 export GHAIT_APP_ID=12345
-export GAT_INSTALLATION_ID=67890
+export GHAIT_INSTALLATION_ID=67890
 ghait -k private.pem
-ghait --key private.pem --repo --permissions contents=read
+ghait --key private.pem --repo test-repo --permissions contents=read
 ghait --provider aws --key alias/github
-ghait --provider vault --key transit/sign/github --repo ghait --permission contents=read,metadata=read
+ghait --provider vault --key transit/sign/github --repo test-repo --permission contents=read,metadata=read
 ```
 
 ## Providers
@@ -118,25 +118,19 @@ import (
 
 func main() {
     ctx := context.Background()
-    config := &ghait.Config{
-        AppID:          12345,
-        InstallationID: 67890,
-        Provider:       "aws",
-        Key:            "alias/github",
-    }
+    config := ghait.NewConfig(12345, 67890, "aws", "alias/github")
 
     factory, err := ghait.NewGHAIT(ctx, config)
     if err != nil {
         log.Fatalf("failed to create ghait instance: %v", err)
     }
 
-    options := &github.InstallationTokenOptions{}
-    token, err := factory.NewInstallationToken(ctx, 0, options)
+    installationToken, err := factory.NewToken(ctx)
     if err != nil {
         log.Fatalf("failed to create installation token: %v", err)
     }
 
-    fmt.Println(token)
+    fmt.Println(installationToken.GetToken())
 }
 ```
 
