@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.28.1
 	github.com/aws/aws-sdk-go-v2/service/kms v1.37.2
 	github.com/bradleyfalzon/ghinstallation/v2 v2.11.0
-	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/go-github/v66 v66.0.0
 	github.com/hashicorp/vault/api v1.15.0
 	github.com/mitchellh/mapstructure v1.5.0
