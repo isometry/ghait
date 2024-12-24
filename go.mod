@@ -3,7 +3,7 @@ module github.com/isometry/ghait
 go 1.23.2
 
 require (
-	cloud.google.com/go/kms v1.20.2
+	cloud.google.com/go/kms v1.20.3
 	github.com/aws/aws-sdk-go-v2/config v1.28.6
 	github.com/aws/aws-sdk-go-v2/service/kms v1.37.7
 	github.com/bradleyfalzon/ghinstallation/v2 v2.12.0
