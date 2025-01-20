@@ -5,7 +5,7 @@ go 1.23.2
 require (
 	cloud.google.com/go/kms v1.20.5
 	github.com/aws/aws-sdk-go-v2/config v1.29.1
-	github.com/aws/aws-sdk-go-v2/service/kms v1.37.10
+	github.com/aws/aws-sdk-go-v2/service/kms v1.37.13
 	github.com/bradleyfalzon/ghinstallation/v2 v2.13.0
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/go-github/v66 v66.0.0
