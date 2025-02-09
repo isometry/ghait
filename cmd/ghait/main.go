@@ -28,33 +28,23 @@ var rootCmd = &cobra.Command{
 	Use:          "ghait [flags]",
 	Short:        "Generate an ephemeral GitHub App installation token",
 	SilenceUsage: true,
-	RunE:         runToken,
-	Version:      fmt.Sprintf("%s, commit %s, built at %s", version, commit, date),
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		viper.BindPFlags(cmd.Flags())
+	},
+	RunE:    runToken,
+	Version: fmt.Sprintf("%s, commit %s, built at %s", version, commit, date),
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().Int64P("app-id", "a", 0, "App ID (required)")
-	viper.BindPFlag("app-id", rootCmd.PersistentFlags().Lookup("app-id"))
-
 	rootCmd.PersistentFlags().Int64P("installation-id", "i", 0, "Installation ID (required)")
-	viper.BindPFlag("installation-id", rootCmd.PersistentFlags().Lookup("installation-id"))
-
 	rootCmd.PersistentFlags().StringP("key", "k", "", "Private key or identifier (required)")
-	viper.BindPFlag("key", rootCmd.PersistentFlags().Lookup("key"))
-
 	rootCmd.PersistentFlags().StringP("provider", "P", "file", fmt.Sprintf("KMS provider (supported: [%s])", strings.Join(provider.Registered(), ",")))
-	viper.BindPFlag("provider", rootCmd.PersistentFlags().Lookup("provider"))
-
 	rootCmd.PersistentFlags().StringSliceP("repository", "r", nil, "Repository names to grant access to (default all)")
-	viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository"))
-
 	rootCmd.PersistentFlags().StringToStringP("permission", "p", nil, "Restricted permissions to grant")
 	rootCmd.PersistentFlags().Lookup("permission").DefValue = "all"
-	viper.BindPFlag("permission", rootCmd.PersistentFlags().Lookup("permission"))
-
-	rootCmd.Flags().SortFlags = false
 }
 
 func initConfig() {
