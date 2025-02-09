@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
+	"github.com/gofri/go-github-ratelimit/github_ratelimit"
 	"github.com/google/go-github/v66/github"
 
 	"github.com/isometry/ghait/provider"
@@ -15,6 +16,28 @@ import (
 	// allowing them to be conditionally disabled.
 )
 
+// FatalError is returned when an error is considered fatal
+type FatalError struct{}
+
+func (e FatalError) Error() string {
+	return "fatal token error"
+}
+
+// TransientError is returned when an error is considered transient
+type TransientError struct{}
+
+func (e TransientError) Error() string {
+	return "transient token error"
+}
+
+func wrapTokenResponseError(resp *github.Response, err error) error {
+	if resp != nil && resp.StatusCode == http.StatusGatewayTimeout {
+		return errors.Join(TransientError{}, err)
+	}
+	return errors.Join(FatalError{}, err)
+}
+
+// GHAIT is the GitHub App Installation Token interface
 type GHAIT interface {
 	GetAppID() int64
 	GetInstallationID() int64
@@ -29,6 +52,7 @@ type ghait struct {
 	Client         *github.Client
 }
 
+// NewGHAIT returns a new GitHub App Installation Token instance
 func NewGHAIT(ctx context.Context, cfg Config) (*ghait, error) {
 	if cfg == nil {
 		return nil, errors.New("config is nil")
@@ -65,19 +89,24 @@ func NewGHAIT(ctx context.Context, cfg Config) (*ghait, error) {
 		return nil, fmt.Errorf("apps transport: %w", err)
 	}
 
+	rateLimitWaiterClient, err := github_ratelimit.NewRateLimitWaiterClient(appsTransport)
+	if err != nil {
+		return nil, fmt.Errorf("rate limit waiter client: %w", err)
+	}
+
 	return &ghait{
 		appID:          cfg.GetAppID(),
 		installationID: cfg.GetInstallationID(),
-		Client: github.NewClient(&http.Client{
-			Transport: appsTransport,
-		}),
+		Client:         github.NewClient(rateLimitWaiterClient),
 	}, nil
 }
 
+// GetAppID returns the GitHub App ID of the ghait instance
 func (g *ghait) GetAppID() int64 {
 	return g.appID
 }
 
+// GetInstallationID returns the GitHub App Installation ID of the ghait instance
 func (g *ghait) GetInstallationID() int64 {
 	return g.installationID
 }
@@ -86,17 +115,20 @@ func (g *ghait) GetInstallationID() int64 {
 // the specified installation, with optional override of the
 // installation ID. If the installation ID is not provided, it will use
 // that of the configured ghait instance.
+// All errors are wrapped in a custom error type to allow for easy error
+// classification: FatalError for errors that should not be retried,
+// TransientError for errors that may be retried.
 func (g *ghait) NewInstallationToken(ctx context.Context, installationId int64, options *github.InstallationTokenOptions) (*github.InstallationToken, error) {
 	if installationId == 0 {
 		if g.installationID == 0 {
-			return nil, errors.New("no GitHub App Installation ID configured")
+			return nil, wrapTokenResponseError(nil, errors.New("no GitHub App Installation ID configured"))
 		}
 		installationId = g.installationID
 	}
 
-	installationToken, _, err := g.Client.Apps.CreateInstallationToken(ctx, installationId, options)
+	installationToken, resp, err := g.Client.Apps.CreateInstallationToken(ctx, installationId, options)
 	if err != nil {
-		return nil, fmt.Errorf("create installation token: %w", err)
+		return nil, fmt.Errorf("create installation token: %w", wrapTokenResponseError(resp, err))
 	}
 
 	return installationToken, nil

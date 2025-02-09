@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.6
 	github.com/aws/aws-sdk-go-v2/service/kms v1.37.18
 	github.com/bradleyfalzon/ghinstallation/v2 v2.13.0
+	github.com/gofri/go-github-ratelimit v1.1.0
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/go-github/v66 v66.0.0
 	github.com/hashicorp/vault/api v1.15.0
