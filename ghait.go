@@ -9,7 +9,7 @@ import (
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/gofri/go-github-ratelimit/github_ratelimit"
-	"github.com/google/go-github/v66/github"
+	"github.com/google/go-github/v69/github"
 
 	"github.com/isometry/ghait/provider"
 	// Individual providers are registered in separate files,
