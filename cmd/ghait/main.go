@@ -1,3 +1,4 @@
+// Package main is the entrypoint of the application
 package main
 
 import (
@@ -15,9 +16,9 @@ import (
 )
 
 var (
-	version string = "snapshot"
-	commit  string = "unknown"
-	date    string = "unknown"
+	version = "snapshot"
+	commit  = "unknown"
+	date    = "unknown"
 )
 
 func main() {
@@ -28,8 +29,8 @@ var rootCmd = &cobra.Command{
 	Use:          "ghait [flags]",
 	Short:        "Generate an ephemeral GitHub App installation token",
 	SilenceUsage: true,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		viper.BindPFlags(cmd.Flags())
+	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+		return viper.BindPFlags(cmd.Flags())
 	},
 	RunE:    runToken,
 	Version: fmt.Sprintf("%s, commit %s, built at %s", version, commit, date),
@@ -53,7 +54,7 @@ func initConfig() {
 	viper.SetEnvPrefix("GHAIT")
 }
 
-func runToken(cmd *cobra.Command, args []string) error {
+func runToken(cmd *cobra.Command, _ []string) error {
 	config := ghait.NewConfig(
 		viper.GetInt64("app-id"),
 		viper.GetInt64("installation-id"),
@@ -75,7 +76,7 @@ func runToken(cmd *cobra.Command, args []string) error {
 	}
 
 	permissions := &github.InstallationPermissions{}
-	if err := mapstructure.Decode(viper.GetStringMapString("permission"), permissions); err != nil {
+	if err = mapstructure.Decode(viper.GetStringMapString("permission"), permissions); err != nil {
 		return fmt.Errorf("decode permissions: %w", err)
 	}
 
@@ -90,7 +91,7 @@ func runToken(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println(token.GetToken())
-	fmt.Fprintf(cmd.ErrOrStderr(), "Expires at: %s\n", token.GetExpiresAt())
+	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Expires at: %s\n", token.GetExpiresAt())
 
 	return nil
 }

@@ -1,5 +1,5 @@
-// Package file provides a file-based implementation of the ghait.Provider interface.
-package file
+// Package stdin provides a stdin-based implementation of the ghait.Provider interface.
+package stdin
 
 import (
 	"context"
@@ -8,8 +8,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
 
@@ -17,29 +16,19 @@ import (
 )
 
 func init() {
-	provider.Register("file", NewSigner)
+	provider.Register("stdin", NewSigner)
 }
 
-// fileSigner implements provider.Provider & ghinstallation.Signer with a local RSA key file.
-type fileSigner struct {
+// stdinSigner implements provider.Provider & ghinstallation.Signer with the RSA key retrieved from stdin.
+type stdinSigner struct {
 	context context.Context
 	key     *rsa.PrivateKey
 }
 
 // NewSigner creates a new file signer.
 func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
-	var keyBytes []byte
-
-	if _, err := os.Stat(key); err == nil {
-		keyBytes, err = os.ReadFile(filepath.Clean(key))
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		keyBytes = []byte(key)
-	}
-
-	if keyBytes == nil {
+	keyBytes := []byte(strings.TrimSpace(key))
+	if len(keyBytes) == 0 {
 		return nil, errors.New("empty key")
 	}
 
@@ -53,18 +42,18 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 		return nil, fmt.Errorf("failed to parse RSA private key: %w", err)
 	}
 
-	return &fileSigner{
+	return &stdinSigner{
 		context: ctx,
 		key:     privateKey,
 	}, nil
 }
 
-func (s *fileSigner) Check() error {
+func (s *stdinSigner) Check() error {
 	// validated within NewSigner
 	return nil
 }
 
 // Sign signs the JWT claims with the RSA key.
-func (s *fileSigner) Sign(claims jwt.Claims) (string, error) {
+func (s *stdinSigner) Sign(claims jwt.Claims) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(s.key)
 }

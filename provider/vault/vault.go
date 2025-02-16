@@ -1,3 +1,4 @@
+// Package vault provides a ghinstallation.Signer implementation using HashiCorp Vault.
 package vault
 
 import (
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
+
 	vault "github.com/hashicorp/vault/api"
 
 	"github.com/isometry/ghait/provider"

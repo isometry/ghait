@@ -1,3 +1,4 @@
+// Package gcp provides a Google Cloud Platform (GCP) KMS signer implementation.
 package gcp
 
 import (
@@ -6,10 +7,11 @@ import (
 	"errors"
 	"fmt"
 
-	kms "cloud.google.com/go/kms/apiv1"
 	"cloud.google.com/go/kms/apiv1/kmspb"
 	"github.com/golang-jwt/jwt/v4"
 	"google.golang.org/api/option"
+
+	kms "cloud.google.com/go/kms/apiv1"
 
 	"github.com/isometry/ghait/provider"
 )
@@ -83,7 +85,7 @@ func (s *gcpSigningMethod) Sign(data string, ikey any) (string, error) {
 		return "", err
 	}
 
-	return base64.RawURLEncoding.EncodeToString(resp.Signature), nil
+	return base64.RawURLEncoding.EncodeToString(resp.GetSignature()), nil
 }
 
 func (s *gcpSigningMethod) Verify(string, string, any) error {

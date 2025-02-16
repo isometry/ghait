@@ -1,3 +1,4 @@
+// Package aws provides the Controller struct that wraps AWS services and provides S3 and SSM functionality with context and logging support.
 package aws
 
 import (
