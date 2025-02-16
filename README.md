@@ -6,7 +6,7 @@ It directly supports multiple Key Management Service (KMS) providers, including 
 ## Features
 
 - Easily generate ephemeral GitHub App Installation Tokens
-- Support for multiple KMS providers: File, AWS, GCP, Vault
+- Support for multiple KMS providers: Stdin, File, AWS, GCP, Vault
 - Support for restricting repositories and permissions per token
 - Fully configurable via environment variables and command-line flags
 
@@ -38,7 +38,7 @@ Flags:
   -a, --app-id int                  App ID (required)
   -i, --installation-id int         Installation ID (required)
   -k, --key string                  Private key or identifier (required)
-  -P, --provider string             KMS provider (supported: [file,aws,gcp,vault]) (default "file")
+  -P, --provider string             KMS provider (supported: [stdin,file,aws,gcp,vault]) (default "file")
   -r, --repository strings          Repository names to grant access to (default all)
   -p, --permission stringToString   Restricted permissions to grant (default all)
   -h, --help                        help for ghait
