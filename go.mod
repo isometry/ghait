@@ -12,7 +12,7 @@ require (
 	github.com/google/go-github/v69 v69.1.0
 	github.com/hashicorp/vault/api v1.16.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/spf13/cobra v1.9.0
+	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	google.golang.org/api v0.221.0
 )
