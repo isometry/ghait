@@ -2,8 +2,10 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/google/go-github/v70/github"
@@ -22,30 +24,37 @@ var (
 )
 
 func main() {
-	_ = rootCmd.Execute()
+	cmd := New()
+	if err := cmd.ExecuteContext(context.Background()); err != nil {
+		os.Exit(1)
+	}
 }
 
-var rootCmd = &cobra.Command{
-	Use:          "ghait [flags]",
-	Short:        "Generate an ephemeral GitHub App installation token",
-	SilenceUsage: true,
-	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-		return viper.BindPFlags(cmd.Flags())
-	},
-	RunE:    runToken,
-	Version: fmt.Sprintf("%s, commit %s, built at %s", version, commit, date),
-}
+func New() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:          "ghait [flags]",
+		Short:        "Generate an ephemeral GitHub App installation token",
+		SilenceUsage: true,
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			return viper.BindPFlags(cmd.Flags())
+		},
+		RunE:    runToken,
+		Version: fmt.Sprintf("%s, commit %s, built at %s", version, commit, date),
+	}
 
-func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().Int64P("app-id", "a", 0, "App ID (required)")
-	rootCmd.PersistentFlags().Int64P("installation-id", "i", 0, "Installation ID (required)")
-	rootCmd.PersistentFlags().StringP("key", "k", "", "Private key or identifier (required)")
-	rootCmd.PersistentFlags().StringP("provider", "P", "file", fmt.Sprintf("KMS provider (supported: [%s])", strings.Join(provider.Registered(), ",")))
-	rootCmd.PersistentFlags().StringSliceP("repository", "r", nil, "Repository names to grant access to (default all)")
-	rootCmd.PersistentFlags().StringToStringP("permission", "p", nil, "Restricted permissions to grant")
-	rootCmd.PersistentFlags().Lookup("permission").DefValue = "all"
+	flags := cmd.Flags()
+
+	flags.Int64P("app-id", "a", 0, "App ID (required)")
+	flags.Int64P("installation-id", "i", 0, "Installation ID (required)")
+	flags.StringP("key", "k", "", "Private key or identifier (required)")
+	flags.StringP("provider", "P", "file", fmt.Sprintf("KMS provider (supported: [%s])", strings.Join(provider.Registered(), ",")))
+	flags.StringSliceP("repository", "r", nil, "Repository names to grant access to (default all)")
+	flags.StringToStringP("permission", "p", nil, "Restricted permissions to grant")
+	flags.Lookup("permission").DefValue = "all"
+
+	return cmd
 }
 
 func initConfig() {
