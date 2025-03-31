@@ -2,8 +2,6 @@ module github.com/isometry/ghait
 
 go 1.24
 
-toolchain go1.24.1
-
 require (
 	cloud.google.com/go/kms v1.21.1
 	github.com/aws/aws-sdk-go-v2/config v1.29.10
@@ -15,7 +13,7 @@ require (
 	github.com/hashicorp/vault/api v1.16.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/viper v1.20.0
+	github.com/spf13/viper v1.20.1
 	google.golang.org/api v0.227.0
 )
 
