@@ -5,7 +5,7 @@ go 1.24
 require (
 	cloud.google.com/go/kms v1.21.1
 	github.com/aws/aws-sdk-go-v2/config v1.29.13
-	github.com/aws/aws-sdk-go-v2/service/kms v1.38.1
+	github.com/aws/aws-sdk-go-v2/service/kms v1.38.2
 	github.com/bradleyfalzon/ghinstallation/v2 v2.14.0
 	github.com/gofri/go-github-ratelimit v1.1.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
