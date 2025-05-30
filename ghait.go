@@ -13,7 +13,7 @@ import (
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/gofri/go-github-ratelimit/github_ratelimit"
-	"github.com/google/go-github/v71/github"
+	"github.com/google/go-github/v72/github"
 
 	"github.com/isometry/ghait/provider"
 )
