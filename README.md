@@ -113,7 +113,7 @@ import (
     "log"
 
     "github.com/isometry/ghait"
-    "github.com/google/go-github/v72/github"
+    "github.com/google/go-github/v73/github"
 )
 
 func main() {
