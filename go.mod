@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	cloud.google.com/go/kms v1.22.0
 	github.com/aws/aws-sdk-go-v2/config v1.31.0
-	github.com/aws/aws-sdk-go-v2/service/kms v1.41.3
+	github.com/aws/aws-sdk-go-v2/service/kms v1.44.0
 	github.com/bradleyfalzon/ghinstallation/v2 v2.16.0
 	github.com/gofri/go-github-ratelimit v1.1.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
