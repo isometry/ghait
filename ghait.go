@@ -12,7 +12,7 @@ import (
 	"slices"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
-	"github.com/gofri/go-github-ratelimit/github_ratelimit"
+	"github.com/gofri/go-github-ratelimit/v2/github_ratelimit"
 	"github.com/google/go-github/v74/github"
 
 	"github.com/isometry/ghait/provider"
@@ -91,10 +91,7 @@ func NewGHAIT(ctx context.Context, cfg Config) (*ghait, error) {
 		return nil, fmt.Errorf("apps transport: %w", err)
 	}
 
-	rateLimitWaiterClient, err := github_ratelimit.NewRateLimitWaiterClient(appsTransport)
-	if err != nil {
-		return nil, fmt.Errorf("rate limit waiter client: %w", err)
-	}
+	rateLimitWaiterClient := github_ratelimit.NewClient(appsTransport)
 
 	return &ghait{
 		appID:          cfg.GetAppID(),
