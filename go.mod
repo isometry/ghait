@@ -1,6 +1,6 @@
 module github.com/isometry/ghait
 
-go 1.24
+go 1.24.0
 
 toolchain go1.24.1
 
@@ -17,7 +17,7 @@ require (
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	google.golang.org/api v0.248.0
+	google.golang.org/api v0.249.0
 )
 
 require (
