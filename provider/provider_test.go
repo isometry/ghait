@@ -8,11 +8,12 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/isometry/ghait/provider"
 )
 
-// MockProvider implements the Provider interface for testing
+// MockProvider implements the Provider interface for testing.
 type MockProvider struct {
 	mock.Mock
 }
@@ -55,7 +56,7 @@ func TestNewSigner_Success(t *testing.T) {
 	ctx := context.Background()
 	signer, err := provider.NewSigner(ctx, "test", "test-key")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expectedProvider, signer)
 }
 
