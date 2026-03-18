@@ -13,7 +13,7 @@ import (
 
 	kms "cloud.google.com/go/kms/apiv1"
 
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v84/provider"
 )
 
 func init() {

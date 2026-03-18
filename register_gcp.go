@@ -4,5 +4,5 @@ package ghait
 
 import (
 	// Register the GCP provider.
-	_ "github.com/isometry/ghait/provider/gcp"
+	_ "github.com/isometry/ghait/v84/provider/gcp"
 )

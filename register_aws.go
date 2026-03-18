@@ -4,5 +4,5 @@ package ghait
 
 import (
 	// Register the AWS provider.
-	_ "github.com/isometry/ghait/provider/aws"
+	_ "github.com/isometry/ghait/v84/provider/aws"
 )

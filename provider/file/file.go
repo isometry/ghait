@@ -13,7 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v84/provider"
 )
 
 func init() {
