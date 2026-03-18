@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/isometry/ghait"
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v80"
+	"github.com/isometry/ghait/v80/provider"
 )
 
 var (

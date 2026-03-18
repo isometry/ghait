@@ -4,5 +4,5 @@ package ghait
 
 import (
 	// Register the stdin provider.
-	_ "github.com/isometry/ghait/provider/stdin"
+	_ "github.com/isometry/ghait/v80/provider/stdin"
 )

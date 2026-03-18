@@ -4,5 +4,5 @@ package ghait
 
 import (
 	// Register the Vault provider.
-	_ "github.com/isometry/ghait/provider/vault"
+	_ "github.com/isometry/ghait/v80/provider/vault"
 )

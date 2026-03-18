@@ -15,7 +15,7 @@ import (
 	"github.com/gofri/go-github-ratelimit/v2/github_ratelimit"
 	"github.com/google/go-github/v80/github"
 
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v80/provider"
 )
 
 // FatalError is returned when an error is considered fatal.

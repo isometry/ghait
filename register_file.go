@@ -4,5 +4,5 @@ package ghait
 
 import (
 	// Register the file provider.
-	_ "github.com/isometry/ghait/provider/file"
+	_ "github.com/isometry/ghait/v80/provider/file"
 )
