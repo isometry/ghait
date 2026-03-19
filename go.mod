@@ -9,7 +9,7 @@ require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.18.0
 	github.com/gofri/go-github-ratelimit/v2 v2.0.2
 	github.com/golang-jwt/jwt/v4 v4.5.2
-	github.com/google/go-github/v80 v80.0.0
+	github.com/google/go-github/v84 v84.0.0
 	github.com/hashicorp/vault/api v1.22.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.10.2
@@ -47,7 +47,6 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
-	github.com/google/go-github/v84 v84.0.0 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.14 // indirect
