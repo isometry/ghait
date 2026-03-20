@@ -15,6 +15,13 @@ import (
 
 	"github.com/isometry/ghait"
 	"github.com/isometry/ghait/provider"
+
+	// Register KMS providers for the CLI binary.
+	// The file provider is registered by default via the ghait library;
+	// cloud and Vault providers require explicit underscore imports.
+	_ "github.com/isometry/ghait/provider/aws"
+	_ "github.com/isometry/ghait/provider/gcp"
+	_ "github.com/isometry/ghait/provider/vault"
 )
 
 var (

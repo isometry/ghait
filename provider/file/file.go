@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
 
@@ -36,7 +37,7 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 			return nil, err
 		}
 	} else {
-		keyBytes = []byte(key)
+		keyBytes = []byte(strings.TrimSpace(key))
 	}
 
 	if keyBytes == nil {

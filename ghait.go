@@ -1,8 +1,14 @@
 // Package ghait provides a simple interface for obtaining GitHub App Installation Tokens.
+//
+// The file provider is registered by default when importing this package.
+// To disable it, build with -tags ghait.no_file.
+//
+// Other providers require explicit underscore imports:
+//
+//	import _ "github.com/isometry/ghait/provider/aws"
+//	import _ "github.com/isometry/ghait/provider/gcp"
+//	import _ "github.com/isometry/ghait/provider/vault"
 package ghait
-
-// @Note: Individual providers are registered in separate files,
-// allowing them to be conditionally disabled.
 
 import (
 	"context"

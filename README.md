@@ -6,7 +6,7 @@ It directly supports multiple Key Management Service (KMS) providers, including 
 ## Features
 
 - Easily generate ephemeral GitHub App Installation Tokens
-- Support for multiple KMS providers: Stdin, File, AWS, GCP, Vault
+- Support for multiple KMS providers: File, AWS, GCP, Vault
 - Support for restricting repositories and permissions per token
 - Fully configurable via environment variables and command-line flags
 
@@ -38,7 +38,7 @@ Flags:
   -a, --app-id int                  App ID (required)
   -i, --installation-id int         Installation ID (required)
   -k, --key string                  Private key or identifier (required)
-  -P, --provider string             KMS provider (supported: [stdin,file,aws,gcp,vault]) (default "file")
+  -P, --provider string             KMS provider (supported: [file,aws,gcp,vault]) (default "file")
   -r, --repository strings          Repository names to grant access to (default all)
   -p, --permission stringToString   Restricted permissions to grant (default all)
   -h, --help                        help for ghait
@@ -62,32 +62,36 @@ ghait --provider vault --key transit/sign/github --repo test-repo --permission c
 
 Various KMS providers are implemented, each conforming to the `Signer` interface of [`bradleyfalzon/ghinstallation/v2`](https://github.com/bradleyfalzon/ghinstallation).
 
-### File
+### File (registered by default)
 
-The `file` provider expects `key` to be the path to a file holding your GitHub App private key, or alternatively the full contents of the key itself.
-
-Disable inclusion with the `no_file` build tag.
+The `file` provider expects `key` to be the path to a file holding your GitHub App private key, or alternatively the full contents of the key itself. This provider is registered by default when importing the `ghait` library. To disable it, build with `-tags ghait.no_file`.
 
 ### AWS
 
 The `aws` provider offloads JWT token signing to AWS KMS. `key` takes the form of a KMS key reference.
 Usage relies on standard AWS configuration and credentials being available to the app.
 
-Disable inclusion with the `no_aws` build tag.
-
 ### GCP
 
 The `gcp` provider offloads JWT token signing to GCP KMS. `key` takes the form of a KMS key reference.
 Usage relies on standard GCP configuration and credentials being available to the app.
-
-Disable inclusion with the `no_gcp` build tag.
 
 ### Vault
 
 The `vault` provider offloads JWT token signing to GCP KMS. `key` takes the form of a transit secrets engine signing path `<mountpoint>/sign/<name>`, for example `transit/sign/github`.
 Usage relies on standard Vault configuration and credentials being available to the app.
 
-Disable inclusion with the `no_vault` build tag.
+### Library Usage
+
+When using `ghait` as a library, the `file` provider is registered by default. Cloud and Vault providers require explicit underscore imports:
+
+```go
+import _ "github.com/isometry/ghait/provider/aws"
+import _ "github.com/isometry/ghait/provider/gcp"
+import _ "github.com/isometry/ghait/provider/vault"
+```
+
+To disable the default `file` provider, build with `-tags ghait.no_file`.
 
 ## Environment Variables
 
@@ -113,7 +117,9 @@ import (
     "log"
 
     "github.com/isometry/ghait"
-    "github.com/google/go-github/v80/github"
+    "github.com/google/go-github/v84/github"
+
+    _ "github.com/isometry/ghait/provider/aws" // register the AWS provider
 )
 
 func main() {
