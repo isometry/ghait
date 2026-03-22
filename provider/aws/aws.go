@@ -1,3 +1,5 @@
+//go:build !ghait.no_aws
+
 // Package aws provides the Controller struct that wraps AWS services and provides S3 and SSM functionality with context and logging support.
 package aws
 
@@ -67,6 +69,10 @@ func (s *awsSigner) Check() error {
 
 	if !slices.Contains[[]types.SigningAlgorithmSpec](key.KeyMetadata.SigningAlgorithms, types.SigningAlgorithmSpecRsassaPkcs1V15Sha256) {
 		return errors.New("privateKey does not support RS256 compatible signing algorithm")
+	}
+
+	if key.KeyMetadata.KeySpec != types.KeySpecRsa2048 {
+		return errors.New("key is not RSA 2048")
 	}
 
 	return nil

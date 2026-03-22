@@ -1,3 +1,5 @@
+//go:build !ghait.no_file
+
 // Package file provides a file-based implementation of the ghait.Provider interface.
 package file
 

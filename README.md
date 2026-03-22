@@ -83,7 +83,11 @@ Usage relies on standard Vault configuration and credentials being available to 
 
 ### Library Usage
 
-When using `ghait` as a library, the `file` provider is registered by default. Cloud and Vault providers require explicit underscore imports:
+When using `ghait` as a library, the `file` provider is registered by default. AWS/GCP KMS and Vault providers can be enabled in two ways:
+
+#### 1. Explicit underscore imports
+
+Add underscore imports in your consuming code to register providers at compile time:
 
 ```go
 import _ "github.com/isometry/ghait/provider/aws"
@@ -91,7 +95,27 @@ import _ "github.com/isometry/ghait/provider/gcp"
 import _ "github.com/isometry/ghait/provider/vault"
 ```
 
-To disable the default `file` provider, build with `-tags ghait.no_file`.
+#### 2. Build tags
+
+Enable providers without modifying source code using build tags. This is useful for users of ghait-consuming binaries who want to enable alternate providers:
+
+```sh
+go build -tags ghait.aws
+go build -tags ghait.gcp
+go build -tags ghait.vault
+go build -tags ghait.aws,ghait.gcp,ghait.vault
+```
+
+#### Disabling providers
+
+Individual providers can be disabled at build time using opt-out build tags, even if they are underscore-imported by the source code:
+
+```sh
+go build -tags ghait.no_aws
+go build -tags ghait.no_gcp
+go build -tags ghait.no_vault
+go build -tags ghait.no_file
+```
 
 ## Environment Variables
 
@@ -103,6 +127,26 @@ You can also configure the CLI using environment variables:
 - `GHAIT_PROVIDER`: KMS provider (supported: file, aws, gcp, vault)
 - `GHAIT_REPOSITORY`: Repositories to grant access to (space-delimited)
 - `GHAIT_PERMISSION`: Restricted permissions to grant (JSON map)
+- `GHAIT_VALIDATE_KEY`: Set to any non-empty value to enable key validation at startup (see below)
+
+## Key Validation
+
+Key validation can be enabled to fail fast on misconfigured keys. This check verifies that the key is an enabled RSA 2048-bit key suitable for RS256 signing (the only key type used by GitHub Apps).
+
+Enable via any of:
+- Environment variable: `GHAIT_VALIDATE_KEY=1`
+- CLI flag: `--validate-key`
+- Programmatically: `ghait.NewConfig(...).WithValidateKey(true)`
+
+By default, key checks are **disabled** to minimise the required permissions. Enabling them requires additional read/describe permissions beyond signing:
+
+| Provider | Additional Permission Required |
+|----------|-------------------------------|
+| AWS      | `kms:DescribeKey`             |
+| Azure    | `keys/get`                    |
+| GCP      | `cloudkms.cryptoKeyVersions.get` |
+| Vault    | `read` on `<mount>/keys/<name>` |
+| File     | _(none — validated at construction)_ |
 
 ## Programmatic Usage
 

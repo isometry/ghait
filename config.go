@@ -1,11 +1,14 @@
 package ghait
 
+import "os"
+
 // Config represents the configuration for the provider.
 type Config interface {
 	GetAppID() int64
 	GetInstallationID() int64
 	GetProvider() string
 	GetKey() string
+	GetValidateKey() bool
 }
 
 type ghaitConfig struct {
@@ -13,6 +16,7 @@ type ghaitConfig struct {
 	installationID int64  `mapstructure:"installationId"`
 	provider       string `mapstructure:"provider"`
 	key            string `mapstructure:"key"`
+	validateKey    bool   `mapstructure:"validateKey"`
 }
 
 // NewConfig creates a new Config instance.
@@ -43,4 +47,16 @@ func (c *ghaitConfig) GetProvider() string {
 // GetKey returns the key.
 func (c *ghaitConfig) GetKey() string {
 	return c.key
+}
+
+// WithValidateKey enables or disables key validation at startup.
+func (c *ghaitConfig) WithValidateKey(validate bool) *ghaitConfig {
+	c.validateKey = validate
+	return c
+}
+
+// GetValidateKey returns whether key validation is enabled,
+// either programmatically or via the GHAIT_VALIDATE_KEY environment variable.
+func (c *ghaitConfig) GetValidateKey() bool {
+	return c.validateKey || os.Getenv("GHAIT_VALIDATE_KEY") != ""
 }

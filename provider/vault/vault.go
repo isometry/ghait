@@ -1,3 +1,5 @@
+//go:build !ghait.no_vault
+
 // Package vault provides a ghinstallation.Signer implementation using HashiCorp Vault.
 package vault
 
@@ -55,7 +57,39 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 }
 
 func (s *vaultSigner) Check() error {
-	// TODO: implement appropriate checks
+	var transitPath, keyName string
+	if strings.Contains(s.key, "/sign/") {
+		parts := strings.SplitN(s.key, "/sign/", 2)
+		transitPath, keyName = parts[0], parts[1]
+	} else {
+		transitPath, keyName = splitOnLast(s.key, "/")
+	}
+	if keyName == "" {
+		return errors.New("invalid key reference format: expected transitPath/keyName")
+	}
+
+	readPath := fmt.Sprintf("%s/keys/%s", transitPath, keyName)
+	secret, err := s.client.Logical().ReadWithContext(s.context, readPath)
+	if err != nil {
+		return fmt.Errorf("failed to read key metadata: %w", err)
+	}
+	if secret == nil || secret.Data == nil {
+		return errors.New("key not found")
+	}
+
+	keyType, ok := secret.Data["type"].(string)
+	if !ok {
+		return errors.New("key type not found in metadata")
+	}
+	if keyType != "rsa-2048" {
+		return fmt.Errorf("key type %q is not rsa-2048", keyType)
+	}
+
+	supportsSigning, _ := secret.Data["supports_signing"].(bool)
+	if !supportsSigning {
+		return errors.New("key does not support signing")
+	}
+
 	return nil
 }
 
