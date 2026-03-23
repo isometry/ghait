@@ -58,13 +58,15 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 
 func (s *vaultSigner) Check() error {
 	var transitPath, keyName string
+	var found bool
 	if strings.Contains(s.key, "/sign/") {
 		parts := strings.SplitN(s.key, "/sign/", 2)
 		transitPath, keyName = parts[0], parts[1]
+		found = true
 	} else {
-		transitPath, keyName = splitOnLast(s.key, "/")
+		transitPath, keyName, found = cutLast(s.key, "/")
 	}
-	if keyName == "" {
+	if !found {
 		return errors.New("invalid key reference format: expected transitPath/keyName")
 	}
 
@@ -122,8 +124,8 @@ func (s *vaultSigningMethod) Sign(data string, ikey any) (string, error) {
 	// but accept "<transitPath>/<keyName>" for convenience
 	signPath := key
 	if !strings.Contains(signPath, "/sign/") {
-		transitPath, keyName := splitOnLast(key, "/")
-		if keyName == "" {
+		transitPath, keyName, found := cutLast(key, "/")
+		if !found {
 			return "", errors.New("invalid key reference format: expected transitPath/keyName")
 		}
 
@@ -155,10 +157,10 @@ func (s *vaultSigningMethod) Verify(string, string, any) error {
 	return errors.New("not implemented")
 }
 
-func splitOnLast(s, sep string) (string, string) {
+func cutLast(s, sep string) (before, after string, found bool) {
 	index := strings.LastIndex(s, sep)
 	if index == -1 {
-		return s, ""
+		return s, "", false
 	}
-	return s[:index], s[index+len(sep):]
+	return s[:index], s[index+len(sep):], true
 }

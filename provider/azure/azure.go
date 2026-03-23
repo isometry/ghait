@@ -34,8 +34,8 @@ type azureSigner struct {
 }
 
 // NewAzureSigner creates a new Azure Key Vault signer.
-func NewAzureSigner(ctx context.Context, vaultURL, keyName, keyVersion string, credential azcore.TokenCredential) (provider.Provider, error) {
-	client, err := azkeys.NewClient(vaultURL, credential, nil)
+func NewAzureSigner(ctx context.Context, vaultURL, keyName, keyVersion string, credential azcore.TokenCredential, opts *azkeys.ClientOptions) (provider.Provider, error) {
+	client, err := azkeys.NewClient(vaultURL, credential, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 		return nil, fmt.Errorf("failed to create Azure credential: %w", err)
 	}
 
-	return NewAzureSigner(ctx, vaultURL, keyName, keyVersion, credential)
+	return NewAzureSigner(ctx, vaultURL, keyName, keyVersion, credential, nil)
 }
 
 func (s *azureSigner) Check() error {

@@ -1,9 +1,8 @@
 //go:build !ghait.no_file
 
-package file
+package file_test
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -15,6 +14,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/isometry/ghait/provider/file"
 )
 
 func generateTestKey(t *testing.T) (*rsa.PrivateKey, []byte) {
@@ -34,7 +35,7 @@ func TestNewSigner_FromFile(t *testing.T) {
 	keyFile := filepath.Join(t.TempDir(), "test.pem")
 	require.NoError(t, os.WriteFile(keyFile, pemBytes, 0600))
 
-	signer, err := NewSigner(context.Background(), keyFile)
+	signer, err := file.NewSigner(t.Context(), keyFile)
 	require.NoError(t, err)
 	assert.NotNil(t, signer)
 }
@@ -42,7 +43,7 @@ func TestNewSigner_FromFile(t *testing.T) {
 func TestNewSigner_FromString(t *testing.T) {
 	_, pemBytes := generateTestKey(t)
 
-	signer, err := NewSigner(context.Background(), string(pemBytes))
+	signer, err := file.NewSigner(t.Context(), string(pemBytes))
 	require.NoError(t, err)
 	assert.NotNil(t, signer)
 }
@@ -52,13 +53,13 @@ func TestNewSigner_FromStringWithWhitespace(t *testing.T) {
 
 	// Simulate trailing newlines (e.g. from env vars or heredocs)
 	keyWithWhitespace := string(pemBytes) + "\n\n  \t\n"
-	signer, err := NewSigner(context.Background(), keyWithWhitespace)
+	signer, err := file.NewSigner(t.Context(), keyWithWhitespace)
 	require.NoError(t, err)
 	assert.NotNil(t, signer)
 }
 
 func TestNewSigner_InvalidPEM(t *testing.T) {
-	signer, err := NewSigner(context.Background(), "not-a-pem-key")
+	signer, err := file.NewSigner(t.Context(), "not-a-pem-key")
 	assert.Nil(t, signer)
 	assert.EqualError(t, err, "failed to decode RSA private key")
 }
@@ -68,19 +69,19 @@ func TestNewSigner_WrongPEMType(t *testing.T) {
 	block := &pem.Block{Type: "EC PRIVATE KEY", Bytes: []byte("fake")}
 	pemBytes := pem.EncodeToMemory(block)
 
-	signer, err := NewSigner(context.Background(), string(pemBytes))
+	signer, err := file.NewSigner(t.Context(), string(pemBytes))
 	assert.Nil(t, signer)
 	assert.EqualError(t, err, "failed to decode RSA private key")
 }
 
 func TestNewSigner_EmptyKey(t *testing.T) {
-	signer, err := NewSigner(context.Background(), "")
+	signer, err := file.NewSigner(t.Context(), "")
 	assert.Nil(t, signer)
 	assert.Error(t, err)
 }
 
 func TestNewSigner_WhitespaceOnlyKey(t *testing.T) {
-	signer, err := NewSigner(context.Background(), "   \n\t  ")
+	signer, err := file.NewSigner(t.Context(), "   \n\t  ")
 	assert.Nil(t, signer)
 	assert.Error(t, err)
 }
@@ -88,7 +89,7 @@ func TestNewSigner_WhitespaceOnlyKey(t *testing.T) {
 func TestCheck(t *testing.T) {
 	_, pemBytes := generateTestKey(t)
 
-	signer, err := NewSigner(context.Background(), string(pemBytes))
+	signer, err := file.NewSigner(t.Context(), string(pemBytes))
 	require.NoError(t, err)
 	assert.NoError(t, signer.Check())
 }
@@ -96,7 +97,7 @@ func TestCheck(t *testing.T) {
 func TestSign_RoundTrip(t *testing.T) {
 	key, pemBytes := generateTestKey(t)
 
-	signer, err := NewSigner(context.Background(), string(pemBytes))
+	signer, err := file.NewSigner(t.Context(), string(pemBytes))
 	require.NoError(t, err)
 
 	claims := jwt.RegisteredClaims{
