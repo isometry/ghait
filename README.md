@@ -1,12 +1,12 @@
 # ghait
 
 `ghait` is a reusable Go module and CLI tool designed to simplify generation of ephemeral GitHub App Installation Tokens.
-It directly supports multiple Key Management Service (KMS) providers, including AWS, GCP, and Vault, to securely sign requests.
+It directly supports multiple Key Management Service (KMS) providers, including AWS, Azure, GCP, and Vault, to securely sign requests.
 
 ## Features
 
 - Easily generate ephemeral GitHub App Installation Tokens
-- Support for multiple KMS providers: File, AWS, GCP, Vault
+- Support for multiple KMS providers: File, AWS, Azure, GCP, Vault
 - Support for restricting repositories and permissions per token
 - Fully configurable via environment variables and command-line flags
 
@@ -38,7 +38,7 @@ Flags:
   -a, --app-id int                  App ID (required)
   -i, --installation-id int         Installation ID (required)
   -k, --key string                  Private key or identifier (required)
-  -P, --provider string             KMS provider (supported: [file,aws,gcp,vault]) (default "file")
+  -P, --provider string             KMS provider (supported: [file,azure,aws,gcp,vault]) (default "file")
   -r, --repository strings          Repository names to grant access to (default all)
   -p, --permission stringToString   Restricted permissions to grant (default all)
   -h, --help                        help for ghait
@@ -55,6 +55,7 @@ export GHAIT_INSTALLATION_ID=67890
 ghait -k private.pem
 ghait --key private.pem --repo test-repo --permissions contents=read
 ghait --provider aws --key alias/github
+ghait --provider azure --key https://myvault.vault.azure.net/keys/github
 ghait --provider vault --key transit/sign/github --repo test-repo --permission contents=read,metadata=read
 ```
 
@@ -76,9 +77,14 @@ Usage relies on standard AWS configuration and credentials being available to th
 The `gcp` provider offloads JWT token signing to GCP KMS. `key` takes the form of a KMS key reference.
 Usage relies on standard GCP configuration and credentials being available to the app.
 
+### Azure
+
+The `azure` provider offloads JWT token signing to Azure Key Vault. `key` takes the form of a full key identifier URL: `https://<vault-name>.vault.azure.net/keys/<key-name>[/<key-version>]`.
+Usage relies on standard Azure credential configuration (environment variables, managed identity, etc.) being available to the app.
+
 ### Vault
 
-The `vault` provider offloads JWT token signing to GCP KMS. `key` takes the form of a transit secrets engine signing path `<mountpoint>/sign/<name>`, for example `transit/sign/github`.
+The `vault` provider offloads JWT token signing to HashiCorp Vault. `key` takes the form of a transit secrets engine signing path `<mountpoint>/sign/<name>`, for example `transit/sign/github`.
 Usage relies on standard Vault configuration and credentials being available to the app.
 
 ### Library Usage
@@ -91,6 +97,7 @@ Add underscore imports in your consuming code to register providers at compile t
 
 ```go
 import _ "github.com/isometry/ghait/provider/aws"
+import _ "github.com/isometry/ghait/provider/azure"
 import _ "github.com/isometry/ghait/provider/gcp"
 import _ "github.com/isometry/ghait/provider/vault"
 ```
@@ -101,9 +108,10 @@ Enable providers without modifying source code using build tags. This is useful 
 
 ```sh
 go build -tags ghait.aws
+go build -tags ghait.azure
 go build -tags ghait.gcp
 go build -tags ghait.vault
-go build -tags ghait.aws,ghait.gcp,ghait.vault
+go build -tags ghait.aws,ghait.azure,ghait.gcp,ghait.vault
 ```
 
 #### Disabling providers
@@ -112,6 +120,7 @@ Individual providers can be disabled at build time using opt-out build tags, eve
 
 ```sh
 go build -tags ghait.no_aws
+go build -tags ghait.no_azure
 go build -tags ghait.no_gcp
 go build -tags ghait.no_vault
 go build -tags ghait.no_file
@@ -124,7 +133,7 @@ You can also configure the CLI using environment variables:
 - `GHAIT_APP_ID`: GitHub App ID
 - `GHAIT_INSTALLATION_ID`: GitHub App Installation ID
 - `GHAIT_KEY`: Private key or identifier
-- `GHAIT_PROVIDER`: KMS provider (supported: file, aws, gcp, vault)
+- `GHAIT_PROVIDER`: KMS provider (supported: file, azure, aws, gcp, vault)
 - `GHAIT_REPOSITORY`: Repositories to grant access to (space-delimited)
 - `GHAIT_PERMISSION`: Restricted permissions to grant (JSON map)
 - `GHAIT_VALIDATE_KEY`: Set to any non-empty value to enable key validation at startup (see below)
