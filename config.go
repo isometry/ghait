@@ -1,7 +1,5 @@
 package ghait
 
-import "os"
-
 // Config represents the configuration for the provider.
 type Config interface {
 	GetAppID() int64
@@ -55,8 +53,7 @@ func (c *ghaitConfig) WithValidateKey(validate bool) *ghaitConfig {
 	return c
 }
 
-// GetValidateKey returns whether key validation is enabled,
-// either programmatically or via the GHAIT_VALIDATE_KEY environment variable.
+// GetValidateKey returns whether key validation is enabled.
 func (c *ghaitConfig) GetValidateKey() bool {
-	return c.validateKey || os.Getenv("GHAIT_VALIDATE_KEY") != ""
+	return c.validateKey
 }

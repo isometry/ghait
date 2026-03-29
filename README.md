@@ -136,15 +136,14 @@ You can also configure the CLI using environment variables:
 - `GHAIT_PROVIDER`: KMS provider (supported: file, azure, aws, gcp, vault)
 - `GHAIT_REPOSITORY`: Repositories to grant access to (space-delimited)
 - `GHAIT_PERMISSION`: Restricted permissions to grant (JSON map)
-- `GHAIT_VALIDATE_KEY`: Set to any non-empty value to enable key validation at startup (see below)
+- `GHAIT_VALIDATE_KEY`: Enable key validation at startup (see below)
 
 ## Key Validation
 
 Key validation can be enabled to fail fast on misconfigured keys. This check verifies that the key is an enabled RSA 2048-bit key suitable for RS256 signing (the only key type used by GitHub Apps).
 
-Enable via any of:
-- Environment variable: `GHAIT_VALIDATE_KEY=1`
-- CLI flag: `--validate-key`
+Enable via:
+- CLI flag: `--validate-key` or environment variable: `GHAIT_VALIDATE_KEY=1`
 - Programmatically: `ghait.NewConfig(...).WithValidateKey(true)`
 
 By default, key checks are **disabled** to minimise the required permissions. Enabling them requires additional read/describe permissions beyond signing:
