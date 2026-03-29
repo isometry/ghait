@@ -6,8 +6,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/isometry/ghait/provider"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/isometry/ghait/v84/provider"
 )
 
 func TestFileProviderRegistered(t *testing.T) {

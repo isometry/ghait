@@ -18,8 +18,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/isometry/ghait/provider"
-	"github.com/isometry/ghait/provider/azure"
+	"github.com/isometry/ghait/v84/provider"
+	"github.com/isometry/ghait/v84/provider/azure"
 )
 
 // fakeCredential implements azcore.TokenCredential for testing.

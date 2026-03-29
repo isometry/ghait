@@ -96,10 +96,10 @@ When using `ghait` as a library, the `file` provider is registered by default. A
 Add underscore imports in your consuming code to register providers at compile time:
 
 ```go
-import _ "github.com/isometry/ghait/provider/aws"
-import _ "github.com/isometry/ghait/provider/azure"
-import _ "github.com/isometry/ghait/provider/gcp"
-import _ "github.com/isometry/ghait/provider/vault"
+import _ "github.com/isometry/ghait/v84/provider/aws"
+import _ "github.com/isometry/ghait/v84/provider/azure"
+import _ "github.com/isometry/ghait/v84/provider/gcp"
+import _ "github.com/isometry/ghait/v84/provider/vault"
 ```
 
 #### 2. Build tags
@@ -168,10 +168,10 @@ import (
     "fmt"
     "log"
 
-    "github.com/isometry/ghait"
+    "github.com/isometry/ghait/v84"
     "github.com/google/go-github/v84/github"
 
-    _ "github.com/isometry/ghait/provider/aws" // register the AWS provider
+    _ "github.com/isometry/ghait/v84/provider/aws" // register the AWS provider
 )
 
 func main() {

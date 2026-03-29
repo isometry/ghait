@@ -13,14 +13,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/isometry/ghait"
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v84"
+	"github.com/isometry/ghait/v84/provider"
 
 	// Register non-default Cloud KMS providers for the CLI binary.
-	_ "github.com/isometry/ghait/provider/aws"
-	_ "github.com/isometry/ghait/provider/azure"
-	_ "github.com/isometry/ghait/provider/gcp"
-	_ "github.com/isometry/ghait/provider/vault"
+	_ "github.com/isometry/ghait/v84/provider/aws"
+	_ "github.com/isometry/ghait/v84/provider/azure"
+	_ "github.com/isometry/ghait/v84/provider/gcp"
+	_ "github.com/isometry/ghait/v84/provider/vault"
 )
 
 var (

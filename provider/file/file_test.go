@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/isometry/ghait/provider/file"
+	"github.com/isometry/ghait/v84/provider/file"
 )
 
 func generateTestKey(t *testing.T) (*rsa.PrivateKey, []byte) {

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v84/provider"
 )
 
 // MockProvider implements the Provider interface for testing.

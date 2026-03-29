@@ -14,7 +14,7 @@ import (
 
 	vault "github.com/hashicorp/vault/api"
 
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v84/provider"
 )
 
 func init() {
