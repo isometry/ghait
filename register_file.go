@@ -1,8 +1,5 @@
-//go:build !no_file
+//go:build !ghait.no_file
 
 package ghait
 
-import (
-	// Register the file provider.
-	_ "github.com/isometry/ghait/provider/file"
-)
+import _ "github.com/isometry/ghait/provider/file" // Register the file provider by default.

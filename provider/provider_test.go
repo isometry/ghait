@@ -53,7 +53,7 @@ func TestNewSigner_Success(t *testing.T) {
 
 	provider.Register("test", testProvider)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	signer, err := provider.NewSigner(ctx, "test", "test-key")
 
 	require.NoError(t, err)
@@ -61,7 +61,7 @@ func TestNewSigner_Success(t *testing.T) {
 }
 
 func TestNewSigner_UnsupportedProvider(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	signer, err := provider.NewSigner(ctx, "nonexistent", "test-key")
 
 	assert.Nil(t, signer)
@@ -76,7 +76,7 @@ func TestNewSigner_ProviderError(t *testing.T) {
 
 	provider.Register("test", testProvider)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	signer, err := provider.NewSigner(ctx, "test", "test-key")
 
 	assert.Nil(t, signer)

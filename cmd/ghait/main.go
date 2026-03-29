@@ -15,6 +15,12 @@ import (
 
 	"github.com/isometry/ghait"
 	"github.com/isometry/ghait/provider"
+
+	// Register non-default Cloud KMS providers for the CLI binary.
+	_ "github.com/isometry/ghait/provider/aws"
+	_ "github.com/isometry/ghait/provider/azure"
+	_ "github.com/isometry/ghait/provider/gcp"
+	_ "github.com/isometry/ghait/provider/vault"
 )
 
 var (
@@ -53,6 +59,7 @@ func New() *cobra.Command {
 	flags.StringSliceP("repository", "r", nil, "Repository names to grant access to (default all)")
 	flags.StringToStringP("permission", "p", nil, "Restricted permissions to grant")
 	flags.Lookup("permission").DefValue = "all"
+	flags.Bool("validate-key", false, "Enable key validation at startup (requires additional permissions)")
 
 	return cmd
 }
@@ -69,7 +76,7 @@ func runToken(cmd *cobra.Command, _ []string) error {
 		viper.GetInt64("installation-id"),
 		strings.ToLower(viper.GetString("provider")),
 		viper.GetString("key"),
-	)
+	).WithValidateKey(viper.GetBool("validate-key"))
 
 	if config.GetAppID() == 0 {
 		return errors.New("app-id is required")

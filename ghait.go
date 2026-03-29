@@ -1,8 +1,31 @@
 // Package ghait provides a simple interface for obtaining GitHub App Installation Tokens.
+//
+// The file provider is registered by default when importing this package.
+// To disable it, build with -tags ghait.no_file.
+//
+// Other providers can be enabled in two ways:
+//
+// 1. Explicit underscore imports in consuming code:
+//
+//	import _ "github.com/isometry/ghait/provider/aws"
+//	import _ "github.com/isometry/ghait/provider/gcp"
+//	import _ "github.com/isometry/ghait/provider/vault"
+//
+// 2. Build tags, allowing enablement without modifying source code:
+//
+//	go build -tags ghait.aws
+//	go build -tags ghait.gcp
+//	go build -tags ghait.vault
+//	go build -tags ghait.aws,ghait.gcp,ghait.vault
+//
+// Individual providers can be disabled at build time using opt-out tags,
+// even if they are underscore-imported by the source code:
+//
+//	go build -tags ghait.no_aws
+//	go build -tags ghait.no_gcp
+//	go build -tags ghait.no_vault
+//	go build -tags ghait.no_file
 package ghait
-
-// @Note: Individual providers are registered in separate files,
-// allowing them to be conditionally disabled.
 
 import (
 	"context"
@@ -78,8 +101,10 @@ func NewGHAIT(ctx context.Context, cfg Config) (*ghait, error) {
 		return nil, fmt.Errorf("unsupported provider: %s", cfg.GetProvider())
 	}
 
-	if err := signer.Check(); err != nil {
-		return nil, fmt.Errorf("signer check: %w", err)
+	if cfg.GetValidateKey() {
+		if err := signer.Check(); err != nil {
+			return nil, fmt.Errorf("signer check: %w", err)
+		}
 	}
 
 	appsTransport, err := ghinstallation.NewAppsTransportWithOptions(

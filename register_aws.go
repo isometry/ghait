@@ -1,8 +1,5 @@
-//go:build !no_aws
+//go:build ghait.aws
 
 package ghait
 
-import (
-	// Register the AWS provider.
-	_ "github.com/isometry/ghait/provider/aws"
-)
+import _ "github.com/isometry/ghait/provider/aws" // Register the AWS provider via build tag.

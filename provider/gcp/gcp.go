@@ -1,3 +1,5 @@
+//go:build !ghait.no_gcp
+
 // Package gcp provides a Google Cloud Platform (GCP) KMS signer implementation.
 package gcp
 
@@ -47,7 +49,21 @@ func NewSigner(ctx context.Context, key string) (provider.Provider, error) {
 }
 
 func (s *gcpSigner) Check() error {
-	// TODO: implement appropriate checks
+	resp, err := s.client.GetCryptoKeyVersion(s.context, &kmspb.GetCryptoKeyVersionRequest{
+		Name: s.key,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get crypto key version: %w", err)
+	}
+
+	if resp.GetState() != kmspb.CryptoKeyVersion_ENABLED {
+		return fmt.Errorf("key is not enabled: %v", resp.GetState())
+	}
+
+	if resp.GetAlgorithm() != kmspb.CryptoKeyVersion_RSA_SIGN_PKCS1_2048_SHA256 {
+		return fmt.Errorf("key does not support RS256 signing with RSA 2048: %v", resp.GetAlgorithm())
+	}
+
 	return nil
 }
 

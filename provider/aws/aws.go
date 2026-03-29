@@ -1,4 +1,6 @@
-// Package aws provides the Controller struct that wraps AWS services and provides S3 and SSM functionality with context and logging support.
+//go:build !ghait.no_aws
+
+// Package aws provides an AWS KMS signer implementation.
 package aws
 
 import (
@@ -20,10 +22,16 @@ func init() {
 	provider.Register("aws", NewSigner)
 }
 
+// KMSClient defines the subset of kms.Client methods used by this provider.
+type KMSClient interface {
+	Sign(ctx context.Context, params *kms.SignInput, optFns ...func(*kms.Options)) (*kms.SignOutput, error)
+	DescribeKey(ctx context.Context, params *kms.DescribeKeyInput, optFns ...func(*kms.Options)) (*kms.DescribeKeyOutput, error)
+}
+
 // awsSigner implements provider.Provider & ghinstallation.Signer for AWS KMS.
 type awsSigner struct {
 	context context.Context
-	client  *kms.Client
+	client  KMSClient
 	key     string
 }
 
@@ -41,6 +49,15 @@ func NewAwsSigner(ctx context.Context, key string, optFns ...func(*config.LoadOp
 		client:  client,
 		key:     key,
 	}, nil
+}
+
+// NewAwsSignerFromClient creates a new AWS signer with a pre-configured KMS client.
+func NewAwsSignerFromClient(ctx context.Context, key string, client KMSClient) provider.Provider {
+	return &awsSigner{
+		context: ctx,
+		client:  client,
+		key:     key,
+	}
 }
 
 // NewSigner returns a new AWS signer with default configuration.
@@ -69,6 +86,10 @@ func (s *awsSigner) Check() error {
 		return errors.New("privateKey does not support RS256 compatible signing algorithm")
 	}
 
+	if key.KeyMetadata.KeySpec != types.KeySpecRsa2048 {
+		return errors.New("key is not RSA 2048")
+	}
+
 	return nil
 }
 
@@ -84,7 +105,7 @@ func (s *awsSigner) Sign(claims jwt.Claims) (string, error) {
 // awsSigningMethod implements jwt.SigningMethod for AWS KMS.
 type awsSigningMethod struct {
 	context context.Context
-	client  *kms.Client
+	client  KMSClient
 }
 
 func (s *awsSigningMethod) Alg() string {

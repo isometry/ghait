@@ -1,8 +1,5 @@
-//go:build !no_vault
+//go:build ghait.vault
 
 package ghait
 
-import (
-	// Register the Vault provider.
-	_ "github.com/isometry/ghait/provider/vault"
-)
+import _ "github.com/isometry/ghait/provider/vault" // Register the Vault provider via build tag.
