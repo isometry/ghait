@@ -192,6 +192,42 @@ func main() {
 }
 ```
 
+### Stateless installation tokens
+
+GitHub's installation-token endpoint accepts an `X-GitHub-Stateless-S2S-Token`
+request header that selects the access-token format. `WithStatelessToken` sets
+it on the token-mint request:
+
+```go
+factory, err := ghait.NewGHAIT(ctx, config,
+    ghait.WithStatelessToken(true), // "enabled": stateless JWT token
+)                                   // WithStatelessToken(false): "disabled" (legacy opaque token)
+```
+
+Without the option no header is sent and behaviour is unchanged. See the
+[GitHub changelog](https://github.blog/changelog/2026-05-15-github-app-installation-tokens-per-request-override-header/)
+for the header's semantics.
+
+### Request Editors
+
+`WithStatelessToken` is built on a general seam, `WithRequestEditor`. A
+`RequestEditor` is a `func(*http.Request) error` invoked for every request the
+client makes, including the token-mint request, after the GitHub App JWT has
+been attached and immediately before the request goes on the wire. The request
+passed in is a clone, so editors compose beneath authentication and rate
+limiting without bypassing them; the first non-nil error aborts the request.
+
+Use it for any other custom header, proxy, or tracing need:
+
+```go
+factory, err := ghait.NewGHAIT(ctx, config,
+    ghait.WithRequestEditor(func(req *http.Request) error {
+        req.Header.Set("X-Custom-Header", "value")
+        return nil
+    }),
+)
+```
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
