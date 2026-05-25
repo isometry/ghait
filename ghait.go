@@ -78,7 +78,7 @@ type ghait struct {
 }
 
 // NewGHAIT returns a new GitHub App Installation Token instance.
-func NewGHAIT(ctx context.Context, cfg Config) (*ghait, error) {
+func NewGHAIT(ctx context.Context, cfg Config, opts ...Option) (*ghait, error) {
 	if cfg == nil {
 		return nil, errors.New("config is nil")
 	}
@@ -107,8 +107,20 @@ func NewGHAIT(ctx context.Context, cfg Config) (*ghait, error) {
 		}
 	}
 
+	o := options{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(&o)
+		}
+	}
+
+	var base = http.DefaultTransport
+	if len(o.requestEditors) > 0 {
+		base = &editorTransport{base: base, editors: o.requestEditors}
+	}
+
 	appsTransport, err := ghinstallation.NewAppsTransportWithOptions(
-		http.DefaultTransport,
+		base,
 		cfg.GetAppID(),
 		ghinstallation.WithSigner(signer),
 	)

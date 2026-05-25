@@ -41,6 +41,8 @@ Flags:
   -P, --provider string             KMS provider (supported: [file,azure,aws,gcp,vault]) (default "file")
   -r, --repository strings          Repository names to grant access to (default all)
   -p, --permission stringToString   Restricted permissions to grant (default all)
+      --stateless                   Request the stateless installation token format (omit to leave the choice to GitHub)
+      --validate-key                Enable key validation at startup (requires additional permissions)
   -h, --help                        help for ghait
   -v, --version                     version for ghait
 ```
@@ -137,6 +139,7 @@ You can also configure the CLI using environment variables:
 - `GHAIT_REPOSITORY`: Repositories to grant access to (space-delimited)
 - `GHAIT_PERMISSION`: Restricted permissions to grant (JSON map)
 - `GHAIT_VALIDATE_KEY`: Enable key validation at startup (see below)
+- `GHAIT_STATELESS`: Select installation token format (`true` for stateless, `false` for legacy; unset leaves the choice to GitHub — see [Stateless installation tokens](#stateless-installation-tokens))
 
 ## Key Validation
 
@@ -190,6 +193,42 @@ func main() {
 
     fmt.Println(installationToken.GetToken())
 }
+```
+
+### Stateless installation tokens
+
+GitHub's installation-token endpoint accepts an `X-GitHub-Stateless-S2S-Token`
+request header that selects the access-token format. `WithStatelessToken` sets
+it on the token-mint request:
+
+```go
+factory, err := ghait.NewGHAIT(ctx, config,
+    ghait.WithStatelessToken(true), // "enabled": stateless JWT token
+)                                   // WithStatelessToken(false): "disabled" (legacy opaque token)
+```
+
+Without the option no header is sent and behaviour is unchanged. See the
+[GitHub changelog](https://github.blog/changelog/2026-05-15-github-app-installation-tokens-per-request-override-header/)
+for the header's semantics.
+
+### Request Editors
+
+`WithStatelessToken` is built on a general seam, `WithRequestEditor`. A
+`RequestEditor` is a `func(*http.Request) error` invoked for every request the
+client makes, including the token-mint request, after the GitHub App JWT has
+been attached and immediately before the request goes on the wire. The request
+passed in is a clone, so editors compose beneath authentication and rate
+limiting without bypassing them; the first non-nil error aborts the request.
+
+Use it for any other custom header, proxy, or tracing need:
+
+```go
+factory, err := ghait.NewGHAIT(ctx, config,
+    ghait.WithRequestEditor(func(req *http.Request) error {
+        req.Header.Set("X-Custom-Header", "value")
+        return nil
+    }),
+)
 ```
 
 ## Contributing
