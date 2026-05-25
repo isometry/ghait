@@ -41,6 +41,8 @@ Flags:
   -P, --provider string             KMS provider (supported: [file,azure,aws,gcp,vault]) (default "file")
   -r, --repository strings          Repository names to grant access to (default all)
   -p, --permission stringToString   Restricted permissions to grant (default all)
+      --stateless                   Request the stateless installation token format (omit to leave the choice to GitHub)
+      --validate-key                Enable key validation at startup (requires additional permissions)
   -h, --help                        help for ghait
   -v, --version                     version for ghait
 ```
@@ -137,6 +139,7 @@ You can also configure the CLI using environment variables:
 - `GHAIT_REPOSITORY`: Repositories to grant access to (space-delimited)
 - `GHAIT_PERMISSION`: Restricted permissions to grant (JSON map)
 - `GHAIT_VALIDATE_KEY`: Enable key validation at startup (see below)
+- `GHAIT_STATELESS`: Select installation token format (`true` for stateless, `false` for legacy; unset leaves the choice to GitHub — see [Stateless installation tokens](#stateless-installation-tokens))
 
 ## Key Validation
 

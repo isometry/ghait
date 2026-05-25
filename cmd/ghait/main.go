@@ -60,6 +60,7 @@ func New() *cobra.Command {
 	flags.StringToStringP("permission", "p", nil, "Restricted permissions to grant")
 	flags.Lookup("permission").DefValue = "all"
 	flags.Bool("validate-key", false, "Enable key validation at startup (requires additional permissions)")
+	flags.Bool("stateless", false, "Request the stateless installation token format (--stateless=false forces legacy; omit to leave the choice to GitHub)")
 
 	return cmd
 }
@@ -86,7 +87,12 @@ func runToken(cmd *cobra.Command, _ []string) error {
 		return errors.New("installation-id is required")
 	}
 
-	factory, err := ghait.NewGHAIT(cmd.Context(), config)
+	var opts []ghait.Option
+	if opt := statelessOption(viper.GetViper()); opt != nil {
+		opts = append(opts, opt)
+	}
+
+	factory, err := ghait.NewGHAIT(cmd.Context(), config, opts...)
 	if err != nil {
 		return err
 	}
@@ -110,4 +116,17 @@ func runToken(cmd *cobra.Command, _ []string) error {
 	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Expires at: %s\n", token.GetExpiresAt())
 
 	return nil
+}
+
+// statelessOption returns the WithStatelessToken option when the "stateless"
+// flag (or the GHAIT_STATELESS environment variable) was explicitly set, or nil
+// when it was left unset. Returning nil preserves the historical behaviour of
+// sending no override header. Relying on viper.IsSet is what distinguishes an
+// explicit --stateless=false (force the legacy format) from the flag being
+// omitted (leave the choice to GitHub).
+func statelessOption(v *viper.Viper) ghait.Option {
+	if !v.IsSet("stateless") {
+		return nil
+	}
+	return ghait.WithStatelessToken(v.GetBool("stateless"))
 }
