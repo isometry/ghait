@@ -10,11 +10,11 @@ import (
 	"encoding/pem"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/go-github/v88/github"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -117,9 +117,9 @@ func TestStatelessOption(t *testing.T) {
 			factory, err := ghait.NewGHAIT(t.Context(), cfg, opts...)
 			require.NoError(t, err)
 
-			base, err := url.Parse(srv.URL + "/")
+			client, err := factory.Client.Clone(github.WithURLs(github.Ptr(srv.URL+"/"), nil))
 			require.NoError(t, err)
-			factory.Client.BaseURL = base
+			factory.Client = client
 
 			tok, err := factory.NewToken(t.Context())
 			require.NoError(t, err)

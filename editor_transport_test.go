@@ -11,11 +11,11 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/google/go-github/v88/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
@@ -53,9 +53,9 @@ func tokenServer(t *testing.T, seen *http.Header, path *string) *httptest.Server
 
 func pointClientAt(t *testing.T, g *ghait, srv *httptest.Server) {
 	t.Helper()
-	base, err := url.Parse(srv.URL + "/")
+	client, err := g.Client.Clone(github.WithURLs(github.Ptr(srv.URL+"/"), nil))
 	require.NoError(t, err)
-	g.Client.BaseURL = base
+	g.Client = client
 }
 
 // TestWithRequestEditor_AppliedToMintRequestUnderAuth is the core proof: a
