@@ -37,13 +37,13 @@ echo "==> Phase 1: Updating main branch"
 echo "  -> Updating go-github to ${VERSION}..."
 go get "github.com/google/go-github/${VERSION}@latest"
 
-echo "  -> Updating all dependencies..."
-go get -u ./...
-go mod tidy
-
 echo "  -> Updating go-github imports in .go files..."
 find . -name '*.go' -not -path './vendor/*' -exec \
   sed -i '' -E "s|github\\.com/google/go-github/v[0-9]+/github|github.com/google/go-github/${VERSION}/github|g" {} +
+
+echo "  -> Updating all dependencies..."
+go get -u ./...
+go mod tidy
 
 echo "  -> Verifying main..."
 go build ./...
