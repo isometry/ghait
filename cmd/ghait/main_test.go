@@ -10,7 +10,6 @@ import (
 	"encoding/pem"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -108,7 +107,7 @@ func TestStatelessOption(t *testing.T) {
 			var seen http.Header
 			srv := tokenServer(t, &seen)
 
-			var opts []ghait.Option
+			opts := []ghait.Option{ghait.WithURLs(srv.URL, "")}
 			if opt != nil {
 				opts = append(opts, opt)
 			}
@@ -116,10 +115,6 @@ func TestStatelessOption(t *testing.T) {
 			cfg := ghait.NewConfig(12345, 67890, "file", testKeyPEM(t))
 			factory, err := ghait.NewGHAIT(t.Context(), cfg, opts...)
 			require.NoError(t, err)
-
-			base, err := url.Parse(srv.URL + "/")
-			require.NoError(t, err)
-			factory.Client.BaseURL = base
 
 			tok, err := factory.NewToken(t.Context())
 			require.NoError(t, err)

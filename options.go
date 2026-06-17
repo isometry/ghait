@@ -18,6 +18,25 @@ type Option func(*options)
 
 type options struct {
 	requestEditors []RequestEditor
+	baseURL        *string
+	uploadURL      *string
+}
+
+// WithURLs sets the base and upload URLs of the underlying GitHub API client,
+// for example to target a GitHub Enterprise Server instance or a test server.
+// An empty string leaves the corresponding URL at its default. Each URL is
+// used as given (only its format is validated); no "/api/v3/" or
+// "/api/uploads/" suffix is appended. When this option is not supplied, the
+// public GitHub API endpoints are used.
+func WithURLs(baseURL, uploadURL string) Option {
+	return func(o *options) {
+		if baseURL != "" {
+			o.baseURL = &baseURL
+		}
+		if uploadURL != "" {
+			o.uploadURL = &uploadURL
+		}
+	}
 }
 
 // WithRequestEditor registers a RequestEditor. It may be supplied multiple

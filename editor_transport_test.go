@@ -11,7 +11,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -51,13 +50,6 @@ func tokenServer(t *testing.T, seen *http.Header, path *string) *httptest.Server
 	return srv
 }
 
-func pointClientAt(t *testing.T, g *ghait, srv *httptest.Server) {
-	t.Helper()
-	base, err := url.Parse(srv.URL + "/")
-	require.NoError(t, err)
-	g.Client.BaseURL = base
-}
-
 // TestWithRequestEditor_AppliedToMintRequestUnderAuth is the core proof: a
 // RequestEditor registered via WithRequestEditor reaches the final
 // POST /app/installations/{id}/access_tokens request, and it composes *under*
@@ -69,12 +61,11 @@ func TestWithRequestEditor_AppliedToMintRequestUnderAuth(t *testing.T) {
 
 	cfg := NewConfig(12345, 67890, "file", testKeyPEM(t))
 
-	g, err := NewGHAIT(t.Context(), cfg, WithRequestEditor(func(req *http.Request) error {
+	g, err := NewGHAIT(t.Context(), cfg, WithURLs(srv.URL, ""), WithRequestEditor(func(req *http.Request) error {
 		req.Header.Set("X-Test-Editor", "applied")
 		return nil
 	}))
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	tok, err := g.NewToken(t.Context())
 	require.NoError(t, err)
@@ -103,11 +94,10 @@ func TestWithRequestEditor_ErrorAbortsRequest(t *testing.T) {
 
 	cfg := NewConfig(12345, 67890, "file", testKeyPEM(t))
 
-	g, err := NewGHAIT(t.Context(), cfg, WithRequestEditor(func(*http.Request) error {
+	g, err := NewGHAIT(t.Context(), cfg, WithURLs(srv.URL, ""), WithRequestEditor(func(*http.Request) error {
 		return errEditorBoom
 	}))
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	tok, err := g.NewToken(t.Context())
 
@@ -136,11 +126,11 @@ func TestWithRequestEditor_RunInRegistrationOrder(t *testing.T) {
 	}
 
 	g, err := NewGHAIT(t.Context(), cfg,
+		WithURLs(srv.URL, ""),
 		WithRequestEditor(mark("first")),
 		WithRequestEditor(mark("second")),
 	)
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	_, err = g.NewToken(t.Context())
 	require.NoError(t, err)
@@ -158,6 +148,7 @@ func TestWithRequestEditor_NilEditorIgnored(t *testing.T) {
 	cfg := NewConfig(12345, 67890, "file", testKeyPEM(t))
 
 	g, err := NewGHAIT(t.Context(), cfg,
+		WithURLs(srv.URL, ""),
 		WithRequestEditor(nil),
 		WithRequestEditor(func(req *http.Request) error {
 			req.Header.Set("X-Test-Editor", "applied")
@@ -165,7 +156,6 @@ func TestWithRequestEditor_NilEditorIgnored(t *testing.T) {
 		}),
 	)
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	tok, err := g.NewToken(t.Context())
 	require.NoError(t, err)
@@ -184,13 +174,13 @@ func TestNewGHAIT_NilOptionIgnored(t *testing.T) {
 
 	g, err := NewGHAIT(t.Context(), cfg,
 		nil,
+		WithURLs(srv.URL, ""),
 		WithRequestEditor(func(req *http.Request) error {
 			req.Header.Set("X-Test-Editor", "applied")
 			return nil
 		}),
 	)
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	tok, err := g.NewToken(t.Context())
 	require.NoError(t, err)
@@ -199,8 +189,9 @@ func TestNewGHAIT_NilOptionIgnored(t *testing.T) {
 }
 
 // TestNewGHAIT_NoOptionsPreservesBehaviour is a backward-compatibility guard:
-// the variadic options addition must leave the no-options path unchanged, so a
-// caller using the historical NewGHAIT(ctx, cfg) form still mints a token.
+// with no feature options the default no-editor transport path is left
+// unchanged and a token is still minted. (WithURLs only sets the base URL, so
+// no request editor is registered.)
 func TestNewGHAIT_NoOptionsPreservesBehaviour(t *testing.T) {
 	var seen http.Header
 	var path string
@@ -208,9 +199,8 @@ func TestNewGHAIT_NoOptionsPreservesBehaviour(t *testing.T) {
 
 	cfg := NewConfig(12345, 67890, "file", testKeyPEM(t))
 
-	g, err := NewGHAIT(t.Context(), cfg)
+	g, err := NewGHAIT(t.Context(), cfg, WithURLs(srv.URL, ""))
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	tok, err := g.NewToken(t.Context())
 	require.NoError(t, err)
@@ -229,9 +219,8 @@ func TestWithStatelessToken_EnabledSetsHeader(t *testing.T) {
 
 	cfg := NewConfig(12345, 67890, "file", testKeyPEM(t))
 
-	g, err := NewGHAIT(t.Context(), cfg, WithStatelessToken(true))
+	g, err := NewGHAIT(t.Context(), cfg, WithURLs(srv.URL, ""), WithStatelessToken(true))
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	tok, err := g.NewToken(t.Context())
 	require.NoError(t, err)
@@ -252,9 +241,8 @@ func TestWithStatelessToken_DisabledSetsHeader(t *testing.T) {
 
 	cfg := NewConfig(12345, 67890, "file", testKeyPEM(t))
 
-	g, err := NewGHAIT(t.Context(), cfg, WithStatelessToken(false))
+	g, err := NewGHAIT(t.Context(), cfg, WithURLs(srv.URL, ""), WithStatelessToken(false))
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	tok, err := g.NewToken(t.Context())
 	require.NoError(t, err)
@@ -264,8 +252,8 @@ func TestWithStatelessToken_DisabledSetsHeader(t *testing.T) {
 }
 
 // TestWithStatelessToken_AbsentSendsNoHeader is a backward-compatibility guard:
-// without the option the mint request carries no override header and a token
-// is still minted (GitHub's automatic rollout decides the format).
+// without WithStatelessToken the mint request carries no override header and a
+// token is still minted (GitHub's automatic rollout decides the format).
 func TestWithStatelessToken_AbsentSendsNoHeader(t *testing.T) {
 	var seen http.Header
 	var path string
@@ -273,9 +261,8 @@ func TestWithStatelessToken_AbsentSendsNoHeader(t *testing.T) {
 
 	cfg := NewConfig(12345, 67890, "file", testKeyPEM(t))
 
-	g, err := NewGHAIT(t.Context(), cfg)
+	g, err := NewGHAIT(t.Context(), cfg, WithURLs(srv.URL, ""))
 	require.NoError(t, err)
-	pointClientAt(t, g, srv)
 
 	tok, err := g.NewToken(t.Context())
 	require.NoError(t, err)

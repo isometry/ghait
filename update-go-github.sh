@@ -67,7 +67,7 @@ if git show-ref --verify --quiet "refs/heads/${VERSION}"; then
   die "branch ${VERSION} already exists locally; this script only handles new major version creation"
 fi
 
-git checkout -b "${VERSION}"
+git switch -c "${VERSION}"
 
 echo "  -> Updating module path..."
 sed -i '' -E "1s|^module .*|module ${MODULE_BASE}/${VERSION}|" go.mod
@@ -106,7 +106,7 @@ git tag -s -a "${NEW_TAG}" -m "Release ${NEW_TAG} tracking go-github/${VERSION}"
 # Phase 3: Return to main
 # ============================================================
 echo "==> Phase 3: Returning to main"
-git checkout main
+git switch main
 
 echo ""
 echo "Done! Created branch ${VERSION} with tag ${NEW_TAG}"

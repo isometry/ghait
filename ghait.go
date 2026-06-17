@@ -36,7 +36,7 @@ import (
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/gofri/go-github-ratelimit/v2/github_ratelimit"
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 
 	"github.com/isometry/ghait/provider"
 )
@@ -130,10 +130,20 @@ func NewGHAIT(ctx context.Context, cfg Config, opts ...Option) (*ghait, error) {
 
 	rateLimitWaiterClient := github_ratelimit.NewClient(appsTransport)
 
+	clientOpts := []github.ClientOptionsFunc{github.WithHTTPClient(rateLimitWaiterClient)}
+	if o.baseURL != nil || o.uploadURL != nil {
+		clientOpts = append(clientOpts, github.WithURLs(o.baseURL, o.uploadURL))
+	}
+
+	client, err := github.NewClient(clientOpts...)
+	if err != nil {
+		return nil, fmt.Errorf("GitHub client: %w", err)
+	}
+
 	return &ghait{
 		appID:          cfg.GetAppID(),
 		installationID: cfg.GetInstallationID(),
-		Client:         github.NewClient(rateLimitWaiterClient),
+		Client:         client,
 	}, nil
 }
 
