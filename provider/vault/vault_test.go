@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/isometry/ghait/provider"
-	"github.com/isometry/ghait/provider/vault"
+	"github.com/isometry/ghait/v88/provider"
+	"github.com/isometry/ghait/v88/provider/vault"
 )
 
 // newTestVaultSigner creates a provider.Provider pointed at a test HTTP server.

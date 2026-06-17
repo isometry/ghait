@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v88/provider"
 	"github.com/stretchr/testify/assert"
 )
 

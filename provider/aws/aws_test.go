@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	awsprovider "github.com/isometry/ghait/provider/aws"
+	awsprovider "github.com/isometry/ghait/v88/provider/aws"
 )
 
 // mockKMSClient implements the aws.KMSClient interface for testing.

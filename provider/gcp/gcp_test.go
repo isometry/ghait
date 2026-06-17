@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
-	"github.com/isometry/ghait/provider/gcp"
+	"github.com/isometry/ghait/v88/provider/gcp"
 )
 
 // fakeKMSServer implements the KeyManagementServiceServer interface for testing.

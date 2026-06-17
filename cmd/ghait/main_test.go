@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/isometry/ghait"
+	"github.com/isometry/ghait/v88"
 )
 
 // testKeyPEM returns a freshly generated RSA private key in PKCS#1 PEM form,

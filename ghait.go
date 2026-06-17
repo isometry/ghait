@@ -7,9 +7,9 @@
 //
 // 1. Explicit underscore imports in consuming code:
 //
-//	import _ "github.com/isometry/ghait/provider/aws"
-//	import _ "github.com/isometry/ghait/provider/gcp"
-//	import _ "github.com/isometry/ghait/provider/vault"
+//	import _ "github.com/isometry/ghait/v88/provider/aws"
+//	import _ "github.com/isometry/ghait/v88/provider/gcp"
+//	import _ "github.com/isometry/ghait/v88/provider/vault"
 //
 // 2. Build tags, allowing enablement without modifying source code:
 //
@@ -38,7 +38,7 @@ import (
 	"github.com/gofri/go-github-ratelimit/v2/github_ratelimit"
 	"github.com/google/go-github/v88/github"
 
-	"github.com/isometry/ghait/provider"
+	"github.com/isometry/ghait/v88/provider"
 )
 
 // FatalError is returned when an error is considered fatal.

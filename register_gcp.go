@@ -2,4 +2,4 @@
 
 package ghait
 
-import _ "github.com/isometry/ghait/provider/gcp" // Register the GCP provider via build tag.
+import _ "github.com/isometry/ghait/v88/provider/gcp" // Register the GCP provider via build tag.
