@@ -150,7 +150,16 @@ func (s *vaultSigningMethod) Sign(data string, ikey any) (string, error) {
 		return "", fmt.Errorf("unexpected signature type: %T", resp.Data["signature"])
 	}
 
-	return strings.TrimPrefix(vaultSignature, "vault:v1:"), nil
+	// Transit prefixes signatures with "vault:v{version}:" (OpenBao likewise), so
+	// strip whatever version arrived rather than the one seen at authoring time: a
+	// rotated key would otherwise leave the prefix in the JWT. The signature body is
+	// base64url and contains no colon, making the last colon the honest boundary.
+	_, signature, found := cutLast(vaultSignature, ":")
+	if !found {
+		return "", fmt.Errorf("unexpected signature format: %q", vaultSignature)
+	}
+
+	return signature, nil
 }
 
 func (s *vaultSigningMethod) Verify(string, string, any) error {
