@@ -145,7 +145,7 @@ func (s *vaultSigningMethod) Sign(data string, ikey any) (string, error) {
 		return "", fmt.Errorf("failed to write to Vault: %w", err)
 	}
 	// Vault's API client returns (nil, nil) for a 404 with an empty body.
-	if resp == nil || resp.Data == nil {
+	if resp == nil {
 		return "", errors.New("no signature returned from Vault")
 	}
 
@@ -154,13 +154,11 @@ func (s *vaultSigningMethod) Sign(data string, ikey any) (string, error) {
 		return "", fmt.Errorf("unexpected signature type: %T", resp.Data["signature"])
 	}
 
-	// Transit prefixes signatures with "vault:v{version}:", so strip whatever
-	// version arrived rather than the one seen at authoring time: a rotated key
-	// would otherwise leave the prefix in the JWT. ':' is not in any base64
-	// alphabet, so the last colon is the honest boundary. golang-jwt joins this
-	// value into the token verbatim, so it must already be exact base64url.
-	_, signature, found := cutLast(vaultSignature, ":")
-	if !found || signature == "" {
+	// Transit returns "vault:v{N}:sig", where N is the key version that signed.
+	// Strip whatever version arrived: hardcoding v1 silently left the prefix in
+	// the JWT after a key rotation, and GitHub answered 401 with no clue why (#118).
+	_, signature, _ := cutLast(vaultSignature, ":")
+	if signature == "" {
 		return "", fmt.Errorf("unexpected signature format (len=%d)", len(vaultSignature))
 	}
 

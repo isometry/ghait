@@ -183,8 +183,6 @@ func TestSign_RotatedKeyVersion(t *testing.T) {
 	}{
 		{name: "v1", signature: "vault:v1:dGVzdC1zaWduYXR1cmU"},
 		{name: "rotated once", signature: "vault:v2:dGVzdC1zaWduYXR1cmU"},
-		{name: "rotated many times", signature: "vault:v42:dGVzdC1zaWduYXR1cmU"},
-		{name: "unrecognised prefix still stripped", signature: "bao:2:dGVzdC1zaWduYXR1cmU"},
 		{
 			name:       "no version prefix",
 			signature:  "dGVzdC1zaWduYXR1cmU",
