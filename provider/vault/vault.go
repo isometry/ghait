@@ -144,13 +144,25 @@ func (s *vaultSigningMethod) Sign(data string, ikey any) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to write to Vault: %w", err)
 	}
+	// Vault's API client returns (nil, nil) for a 404 with an empty body.
+	if resp == nil {
+		return "", errors.New("no signature returned from Vault")
+	}
 
 	vaultSignature, ok := resp.Data["signature"].(string)
 	if !ok {
 		return "", fmt.Errorf("unexpected signature type: %T", resp.Data["signature"])
 	}
 
-	return strings.TrimPrefix(vaultSignature, "vault:v1:"), nil
+	// Transit returns "vault:v{N}:sig", where N is the key version that signed.
+	// Strip whatever version arrived: hardcoding v1 silently left the prefix in
+	// the JWT after a key rotation, and GitHub answered 401 with no clue why (#118).
+	_, signature, _ := cutLast(vaultSignature, ":")
+	if signature == "" {
+		return "", fmt.Errorf("unexpected signature format (len=%d)", len(vaultSignature))
+	}
+
+	return signature, nil
 }
 
 func (s *vaultSigningMethod) Verify(string, string, any) error {

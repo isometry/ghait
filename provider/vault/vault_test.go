@@ -174,3 +174,50 @@ func TestSign_VaultError(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to write to Vault")
 }
+
+func TestSign_RotatedKeyVersion(t *testing.T) {
+	tests := []struct {
+		name       string
+		signature  string
+		wantErrMsg string
+	}{
+		{name: "v1", signature: "vault:v1:dGVzdC1zaWduYXR1cmU"},
+		{name: "rotated once", signature: "vault:v2:dGVzdC1zaWduYXR1cmU"},
+		{
+			name:       "no version prefix",
+			signature:  "dGVzdC1zaWduYXR1cmU",
+			wantErrMsg: "unexpected signature format",
+		},
+		{
+			name:       "empty signature body",
+			signature:  "vault:v1:",
+			wantErrMsg: "unexpected signature format",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				resp := map[string]any{
+					"data": map[string]any{"signature": tt.signature},
+				}
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(resp)
+			})
+
+			signer := newTestVaultSigner(t, handler, "transit/mykey")
+			token, err := signer.Sign(jwt.RegisteredClaims{Issuer: "test-app"})
+			if tt.wantErrMsg != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.wantErrMsg)
+				return
+			}
+			require.NoError(t, err)
+
+			parts := strings.Split(token, ".")
+			require.Len(t, parts, 3)
+			assert.Equal(t, "dGVzdC1zaWduYXR1cmU", parts[2],
+				"version prefix must be stripped whatever the key version")
+		})
+	}
+}
