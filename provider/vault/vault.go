@@ -144,19 +144,24 @@ func (s *vaultSigningMethod) Sign(data string, ikey any) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to write to Vault: %w", err)
 	}
+	// Vault's API client returns (nil, nil) for a 404 with an empty body.
+	if resp == nil || resp.Data == nil {
+		return "", errors.New("no signature returned from Vault")
+	}
 
 	vaultSignature, ok := resp.Data["signature"].(string)
 	if !ok {
 		return "", fmt.Errorf("unexpected signature type: %T", resp.Data["signature"])
 	}
 
-	// Transit prefixes signatures with "vault:v{version}:" (OpenBao likewise), so
-	// strip whatever version arrived rather than the one seen at authoring time: a
-	// rotated key would otherwise leave the prefix in the JWT. The signature body is
-	// base64url and contains no colon, making the last colon the honest boundary.
+	// Transit prefixes signatures with "vault:v{version}:", so strip whatever
+	// version arrived rather than the one seen at authoring time: a rotated key
+	// would otherwise leave the prefix in the JWT. ':' is not in any base64
+	// alphabet, so the last colon is the honest boundary. golang-jwt joins this
+	// value into the token verbatim, so it must already be exact base64url.
 	_, signature, found := cutLast(vaultSignature, ":")
-	if !found {
-		return "", fmt.Errorf("unexpected signature format: %q", vaultSignature)
+	if !found || signature == "" {
+		return "", fmt.Errorf("unexpected signature format (len=%d)", len(vaultSignature))
 	}
 
 	return signature, nil
