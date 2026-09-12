@@ -1,0 +1,22 @@
+formula:
+  name: ghait
+  description: Easily generate GitHub App Installation Tokens
+  homepage: https://just.breathe.io/project/ghait/
+  license: Apache-2.0
+  install:
+    completions: true
+  test:
+    command: [--version]
+
+source:
+  type: local
+  build:
+    packages: ["./cmd/ghait"]
+    ldflags: >-
+      -s -w
+      -X main.version={{.Version}}
+      -X main.commit={{.Commit}}
+      -X main.date={{.Date}}
+
+tap:
+  owner: isometry

@@ -21,6 +21,7 @@ go install github.com/isometry/ghait/cmd/ghait@latest
 ### Homebrew
 
 ```sh
+brew trust isometry/tap   # once, required on Homebrew >= 6
 brew install isometry/tap/ghait
 ```
 

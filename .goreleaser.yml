@@ -26,7 +26,7 @@ builds:
       - amd64
       - arm64
 archives:
-  - format: zip
+  - formats: [zip]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 snapshot:
   version_template: "{{ .Tag }}-next"
@@ -41,15 +41,3 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
-brews:
-  - repository:
-      owner: isometry
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    directory: Formula
-    description: Easily generate GitHub App Installation Tokens
-    homepage: https://just.breathe.io/project/ghait/
-    test: |
-      system "#{bin}/ghait --help"
-    install: |
-      bin.install "ghait"
