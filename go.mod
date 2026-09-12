@@ -1,4 +1,4 @@
-module github.com/isometry/ghait
+module github.com/isometry/ghait/v91
 
 go 1.26.0
 
